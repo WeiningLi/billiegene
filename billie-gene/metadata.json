@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Science Skill Runner",
+  "description": "Execute scientific code with agents utilizing tools and skills from Google Deepmind’s science-skills library.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

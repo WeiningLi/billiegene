@@ -1,0 +1,54 @@
+import { PathogenPreset } from "./types";
+
+export const PATHOGEN_PRESETS: PathogenPreset[] = [
+  {
+    title: "SARS-CoV-2 (Spike Glycoprotein)",
+    virusType: "Coronavirus",
+    description: "Severe acute respiratory syndrome coronavirus 2 surface spike glycoprotein. Responsible for host-cell receptor binding (ACE2) and fusion.",
+    accessionId: "YP_009724390.1",
+    orfCount: 12,
+    sequence: `>SARS-CoV-2_Spike_Glycoprotein_accession_YP_009724390.1
+MFVFLVLLPLVSSQCVNLTTRTQLPPAYTNSFTRGVYYPDKVFRSSVLHSTQDLFLPFYSNVTWFHAIHVSGTNGTKRFDNPVLPFNDGVYFASTEKSNIIRGWIFGTTLDSKTQSLLIVNNATNVVIKVCEFQFCNDPFLGVYYHKNNKSWMESEFRVYSSANNCTFEYVSQPFLMDLEGKQGNFKNLREFVFKNIDGYFKIYSKHTPINLVRDLPQGFSALEPLVDLPIGINITRFQTLLALHRSYLTPGDSSSGWTAGAAAYYVGYLQPRTFLLKYNENGTITDAVDCALDPLSETKCTLKSFTVEKGIYQTSNFRVQPTESIVRFPNITNLCPFGEVFNATRFASVYAWNRKRISNCVADYSVLYNSASFSTFKCYGVSPTKLNDLCFTNVYADSFVIRGDEVRQIAPGQTGKIADYNYKLPDDFTGCVIAWNSNNLDSKVGGNYNYLYRLFRKSNLKPFERDISTEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTNGVGYQPYRVVVLSFELLHAPATVCGPKKSTNLVKNKCVNFNFNGLTGTGVLTESNKKFLPFQQFGRDIADTTDAVRDPQTLEILDITPCSFGGVSVITPGTNTSNQVAVLYQDVNCTEVPVAIHADQLTPTWRVYSTGSNVFQTRAGCLIGAEHVNNSYECDIPIGAGICASYQTQTNSPRRARSVASQSIIAYTMSLGAENSVAYSNNSIAIPTNFTISVTTEILPVSMTKTSVDCTMYICGDSTECSNLLLQYGSFCTQLNRALTGIAVEQDKNTQEVFAQVKQIYKTPPIKDFGGFNFSQILPDPSKPSKRSFIEDLLFNKVTLADAGFIKQYGDCLGDIAARDLICAQKFNGLTVLPPLLTDEMIAQYTGALAGTITSGWTFGAGAALQIPFAMQMAYRFNGIGVTQNVLYENQKLIANQFNSAIGKIQDSLSSTASALGKLQDVVNQNAQALNTLVKQLSSNFGAISSVLNDILSRLDKVEAEVQIDRLITGRLQSLQTYVTQQLIRAAEIRASANLAATKMSECVLGQSKRVDFCGKGYHLMSFPQSAPHGVVFLHVTYVPAQEKNFTTAPAICHDGKAHFPREGVFVSNGTHWFVTQRNFYEPQIITTDNTFVSGNCDVVIGIVNNTVYDPLQPELDSFKEELDKYFKNHTSPDVDLGDISGINASVVNIQKEIDRLNEVAKNLNESLIDLQELGKYEQYIKWPWYIWLGFIAGLIAIVMVTIMLCCMTSCCSCLKGACCSGSCCKFDEDDSEPVLKGVKLHYT`,
+    notes: "Contains highly targeted Receptor Binding Domain (RBD) between residues 319-541. Features key mutation clusters in Omicron variants (K417N, E484A, N501Y) that are known to alter neutralizing antibody binding."
+  },
+  {
+    title: "Influenza A H5N1 (Hemagglutinin HA1)",
+    virusType: "Orthomyxovirus",
+    description: "Hemagglutinin glycoprotein from highly pathogenic avian influenza A virus. Mediates receptor attachment and membrane fusion during cell-entry.",
+    accessionId: "ABP38012.1",
+    orfCount: 8,
+    sequence: `>Influenza_A_H5N1_Hemagglutinin_accession_ABP38012.1
+MEKIVLLFAIVSLVKSDQICIGYHANNSTEQVDTIMEKNVTVTHAQDILEKKHNGKLCDLDGVKPLILRDCSVAGWLLGNPMCDECLPVPEWSYIVEKDNPVNDLCYPGDFNDYEELKHLLSRINHFEKIQIIPKSSWSDHEASSGVSSACPYQGTSSFFRNVVWLIKKNSAYPTIKRSYNNTNQEDLLVLWGIHHPNDAAEQTRLYQNPTTYISVGTSTLNQRLVPKIATRSKVNGQSGRMEFFWTILKPNDAINFESNGNFIAPEYAYKIVKKGDSTIMKSELEYGNCNTKCQTPMGAINSSMPFHNIHPLTIGECPKYVKSNRLVLA`,
+    notes: "The cleavage site contains a multi-basic motif (R-R-K-K-R) associated with systemic pantropic replication. Strong immunogenicity profiles are targeted to conserved HA stem helix regions."
+  },
+  {
+    title: "Ebola Virus Glycoprotein (GP)",
+    virusType: "Filovirus",
+    description: "Surface envelope glycoprotein of Zaire ebolavirus. Mediates cell attachment, endosomal entry, and causes severe hemorrhagic fever symptoms.",
+    accessionId: "AAG40168.1",
+    orfCount: 7,
+    sequence: `>Ebola_Virus_Glycoprotein_accession_AAG40168.1
+MGVTGILQLPRDRFKRTSFFLWVIILFQRTFSIPLGVIHNSTLQVSDVDKLVCRDKLSSTNQLRSVGLNLEGNGVATDVPSATKRWGFRSGVPPKVVNYEAGEWAENCYNLDIKKADGSECLPEAPEGVRGFPRCRYVHKVSGTGPCAGDFAFHKEGAFFLYDRLASTVIYRGTTFAEGVVAFLILPQAKKDFFSSHPLREPVNATEDPSSGYYSTTIRYQATGFGTNETEYLFEVDNLTYVQLESRFTPQFLLQLNETIYTSGKRSNTTGKLIWKVNPEIDTTIGEWAFWETKKTSLEKFAVKSCLRQLYNVEAHTLQDRS`,
+    notes: "Features a heavily glycosylated mucin-like domain (MLD) that acts as a steric shield, hiding conserved neutralizing epitopes on the gp2 core fusion machinery. GP1/GP2 cleavage occurs via furin protease."
+  },
+  {
+    title: "Zika Virus Envelope Protein (E)",
+    virusType: "Flavivirus",
+    description: "Envelope glycoprotein of Zika virus. Main component of viral virion surface, responsible for host attachment, receptor mediated endocytosis, and neurotropism.",
+    accessionId: "AMB18850.1",
+    orfCount: 1,
+    sequence: `>Zika_Virus_Envelope_Protein_accession_AMB18850.1
+IRCIGVSNRDFVEGMSGGTWVDVVLEHGGCVTVMAQDKPTVDIELVTTTVSNMAEVRSYCYEASISDMASDSRCPTQGEAYLDKQSDTQYVCKRTLVDRGWGNGCGLFGKGSLVTCAKFACSKKMTGKSIQPENLEYRIMLSVHGSQHSGMIVNDTGHETDENRAKVEITPNSPRAEATLGGFGSLGLDCEPRTGLDFSDLYYLTMNNKHWLVHKEWFHDIPLPWHAGADTGTPHWNNKEALVEFKDAHAKRQTVVVLGSQEGAVHTALAGALEAEMDGAKGRLSSGHLKCRLKMDKLRLKGVSYSLCTAAFTFTKIPA`,
+    notes: "The E monomer forms homodimers arrayed on the viral membrane. Central targeted loops lie near Domain III, which is a key target for highly potent, specific neutralizing monoclonal antibodies."
+  },
+  {
+    title: "Xeno-Virus Synthetica (XV-9 Mock)",
+    virusType: "Synthetic Phage",
+    description: "An engineered, non-existing model viral genome created for clinical safety simulations. Mapped with artificial, non-expressing synthetic amino acid segments.",
+    accessionId: "XV_999999.1",
+    orfCount: 9,
+    sequence: `>Xeno-Virus_Synthetica_XV-9_Mock_Genome
+MELKRTFYNLAGAGDEVWKKTPLASVTRDATYPKTCKTTAKIEAFTDNTGTGTQTPQYTVALKVGFAKLPQQTYSGGVVLTLTVDMEYSVTIPAKLSTFVRGTKYIVSLAVGGKLTLIDKDWAEVQTGGGGSGGYDTFNGENGEIPLEIRATTGAEVDTRAVTAVEMTESLGIYRLPDEEDYTALENFRYNRVAGENTVIYVGTYARLCYAPYNSVEFKSSLKTEAGLTMQTYEKDMRAVSGGDSTPCNGVEGFN`,
+    notes: "A purely mock virus sequence engineered for development and analysis. Consists of simulated hydrophobic transmembrane regions and multiple artificial immunological loops designed for testing."
+  }
+];

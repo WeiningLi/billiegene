@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-light: #f7f8f6;
+  --color-panel-light: #ffffff;
+  --color-ink: #151515;
+  --color-muted-ink: #60646c;
+  --color-line: #d9ddd7;
+  --color-line-strong: #9ca39b;
+  --color-teal-brand: #008c89;
+  --color-blue-brand: #2f67d8;
+  --color-amber-brand: #d98c00;
+  --color-rose-brand: #c6495d;
+  --color-green-brand: #42855b;
+}
