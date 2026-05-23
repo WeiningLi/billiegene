@@ -1,0 +1,245 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Billie Gene Swiss Light Theme (Original GitHub UI mode) Overrides
+   ========================================================================== */
+
+.theme-github-light {
+  --bg: #f7f8f6;
+  --panel: #ffffff;
+  --ink: #151515;
+  --muted: #60646c;
+  --line: #d9ddd7;
+  --line-strong: #9ca39b;
+  --teal: #008c89;
+  --blue: #2f67d8;
+  --amber: #d98c00;
+  --rose: #c6495d;
+  --green: #42855b;
+
+  background-color: var(--bg) !important;
+  color: var(--ink) !important;
+  color-scheme: light;
+}
+
+/* Target all deep descendants of .theme-github-light */
+.theme-github-light,
+.theme-github-light *,
+.theme-github-light ::placeholder {
+  --tw-ring-offset-width: 0px !important;
+}
+
+.theme-github-light .bg-zinc-950,
+.theme-github-light .bg-zinc-900,
+.theme-github-light .bg-[#0b0c0e],
+.theme-github-light .bg-zinc-950\/95,
+.theme-github-light .bg-zinc-950\/50,
+.theme-github-light .bg-black {
+  background-color: var(--panel) !important;
+  color: var(--ink) !important;
+}
+
+/* General containers / workspace wrapper */
+.theme-github-light#billie-gene-workspace,
+.theme-github-light .bg-zinc-950#billie-gene-workspace {
+  background-color: var(--bg) !important;
+  color: var(--ink) !important;
+}
+
+/* Step screens and panels */
+.theme-github-light .rounded-xl,
+.theme-github-light .rounded-lg,
+.theme-github-light .rounded-2xl {
+  background-color: var(--panel) !important;
+  border-color: var(--line) !important;
+}
+
+/* Headers / text colors */
+.theme-github-light h1,
+.theme-github-light h2,
+.theme-github-light h3,
+.theme-github-light h4,
+.theme-github-light h5,
+.theme-github-light h6,
+.theme-github-light strong,
+.theme-github-light .text-white,
+.theme-github-light .text-zinc-100,
+.theme-github-light .text-zinc-205,
+.theme-github-light .text-zinc-200 {
+  color: var(--ink) !important;
+}
+
+.theme-github-light p,
+.theme-github-light span:not(.text-emerald-400):not(.text-cyan-400):not(.text-blue-400):not(.text-amber-400):not(.text-red-400):not(.text-emerald-300):not(.text-cyan-300),
+.theme-github-light label,
+.theme-github-light .text-zinc-400,
+.theme-github-light .text-zinc-500,
+.theme-github-light .text-zinc-450 {
+  color: var(--muted) !important;
+}
+
+/* Global inputs and textareas */
+.theme-github-light textarea,
+.theme-github-light input {
+  background-color: #fafbf9 !important;
+  color: var(--ink) !important;
+  border-color: var(--line-strong) !important;
+}
+
+.theme-github-light textarea:focus,
+.theme-github-light input:focus {
+  border-color: var(--teal) !important;
+  outline: 2px solid rgba(0, 140, 137, 0.15) !important;
+}
+
+/* Specific borders override */
+.theme-github-light .border-zinc-900,
+.theme-github-light .border-zinc-805,
+.theme-github-light .border-zinc-850,
+.theme-github-light .border-zinc-800,
+.theme-github-light .border-zinc-850\/40,
+.theme-github-light .border-zinc-900\/60,
+.theme-github-light .border-b,
+.theme-github-light .border-t,
+.theme-github-light .border-r,
+.theme-github-light .border-l {
+  border-color: var(--line) !important;
+}
+
+/* Global button/nav classes inside GitHub UI mode */
+.theme-github-light .bg-emerald-600 {
+  background-color: var(--teal) !important;
+  color: #ffffff !important;
+}
+
+.theme-github-light .bg-emerald-600:hover {
+  background-color: #007673 !important;
+}
+
+.theme-github-light .text-emerald-400 {
+  color: var(--teal) !important;
+}
+
+.theme-github-light .bg-emerald-500\/10 {
+  background-color: rgba(0, 140, 137, 0.08) !important;
+  color: var(--teal) !important;
+  border-color: rgba(0, 140, 137, 0.2) !important;
+}
+
+.theme-github-light .text-cyan-400 {
+  color: var(--blue) !important;
+}
+
+.theme-github-light .bg-cyan-600 {
+  background-color: var(--teal) !important;
+  color: #ffffff !important;
+  border-color: var(--teal) !important;
+}
+
+.theme-github-light .bg-cyan-600:hover {
+  background-color: #007673 !important;
+}
+
+.theme-github-light .bg-cyan-950\/20 {
+  background-color: rgba(47, 103, 216, 0.08) !important;
+  border-color: rgba(47, 103, 216, 0.18) !important;
+  color: var(--blue) !important;
+}
+
+.theme-github-light .text-emerald-300 {
+  color: var(--teal) !important;
+}
+
+.theme-github-light .bg-zinc-900\/60,
+.theme-github-light .bg-zinc-900\/70 {
+  background-color: #ffffff !important;
+  border-color: var(--line) !important;
+}
+
+/* Stepper navigation / Segmented control */
+.theme-github-light .bg-zinc-800,
+.theme-github-light .bg-zinc-800\/50 {
+  background-color: rgba(0, 140, 137, 0.08) !important;
+  color: var(--teal) !important;
+  border-color: rgba(0, 140, 137, 0.28) !important;
+}
+
+.theme-github-light .text-zinc-500 {
+  color: var(--muted) !important;
+}
+
+/* Status dots, safety notifications, warnings */
+.theme-github-light .bg-amber-500\/10 {
+  background-color: rgba(217, 140, 0, 0.08) !important;
+  border-color: rgba(217, 140, 0, 0.3) !important;
+}
+
+.theme-github-light .text-amber-300,
+.theme-github-light .text-amber-400 {
+  color: #a45f00 !important;
+}
+
+.theme-github-light .bg-amber-950\/40 {
+  background-color: rgba(217, 140, 0, 0.08) !important;
+}
+
+.theme-github-light .text-amber-200 {
+  color: #8c4e00 !important;
+}
+
+/* Sliders elements */
+.theme-github-light .accent-cyan-500 {
+  accent-color: var(--teal) !important;
+}
+
+/* Tables and results */
+.theme-github-light table {
+  background-color: var(--panel) !important;
+  border-color: var(--line) !important;
+}
+
+.theme-github-light thead {
+  background-color: #fafbf9 !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+
+.theme-github-light tbody tr {
+  border-bottom: 1px solid var(--line) !important;
+}
+
+.theme-github-light tbody tr:hover {
+  background-color: #fafbf9 !important;
+}
+
+.theme-github-light tr.bg-zinc-900,
+.theme-github-light .bg-zinc-900 {
+  background-color: rgba(0, 140, 137, 0.05) !important;
+}
+
+/* Swarm log colors */
+.theme-github-light .bg-black {
+  background-color: #fafbf9 !important;
+  border-color: var(--line-strong) !important;
+  color: var(--ink) !important;
+}
+
+.theme-github-light .text-zinc-450 {
+  color: var(--muted) !important;
+}
+
+.theme-github-light .text-emerald-400.font-bold {
+  color: var(--green) !important;
+}
+
+/* 3D viewer elements overlay wrapper */
+.theme-github-light .bg-zinc-950\/90,
+.theme-github-light .bg-zinc-950\/95,
+.theme-github-light .bg-zinc-900\/90 {
+  background-color: rgba(255, 255, 255, 0.94) !important;
+  border-color: var(--line) !important;
+}
+
+.theme-github-light .ring-1 {
+  --tw-ring-color: var(--line) !important;
+}
+

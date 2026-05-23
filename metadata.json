@@ -1,0 +1,6 @@
+{
+  "name": "Billie Gene",
+  "description": "An AI-assisted vaccine design workflow that helps researchers move from a pathogen sequence to a ranked vaccine candidate dossier.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -113,18 +113,6 @@
         background: rgba(198, 73, 93, 0.08);
       }
 
-      .pill.agent-link {
-        text-decoration: none;
-        transition: border-color 140ms ease, background 140ms ease, color 140ms ease;
-      }
-
-      .pill.agent-link:hover,
-      .pill.agent-link:focus-visible {
-        border-color: rgba(47, 103, 216, 0.42);
-        color: #174aa2;
-        background: rgba(47, 103, 216, 0.08);
-      }
-
       .stepper {
         background: #ffffff;
         border-bottom: 1px solid var(--line);
@@ -2083,7 +2071,6 @@
         <div class="status-row" aria-label="workflow status">
           <span class="pill" data-tone="teal">ESMFold ready</span>
           <span class="pill">6-step workflow</span>
-          <a class="pill agent-link" href="/agents">Bio Agent Workbench</a>
           <span class="pill" data-tone="rose">Research use</span>
         </div>
       </header>
@@ -2273,11 +2260,63 @@
 
           <section class="panel surface-track-panel">
             <div class="panel-header">
-              <h2>Amino Acid Breakdown</h2>
-              <span class="sub">Codon triplet mapping</span>
+              <h2>Surface Protein Track</h2>
+              <span class="sub" id="surfaceProteinLabel">Awaiting sequence</span>
             </div>
             <div class="section stack">
+              <div class="track-stack">
+                <div class="field-label">
+                  <span id="surfaceTrackTitle">Residue hydropathy profile and exposed candidate markers</span>
+                  <span id="surfaceTrackLength">0 aa</span>
+                </div>
+                <div class="topology-chart-wrap">
+                  <svg class="topology-chart" id="surfaceRail" viewBox="0 0 920 280" role="img" aria-labelledby="topologyChartTitle topologyChartDesc">
+                    <title id="topologyChartTitle">Residue hydropathy profile</title>
+                    <desc id="topologyChartDesc">Line graph of sequence hydropathy with candidate exposed residue markers.</desc>
+                  </svg>
+                </div>
+                <div class="track-labels">
+                  <span>N-term</span>
+                  <span id="surfaceTopologyLabel">Awaiting real sequence input</span>
+                  <span>C-term</span>
+                </div>
+              </div>
+
+              <div class="annotation-lanes" id="annotationLanes" aria-label="surface feature annotation lanes"></div>
+
+              <div class="part-legend" id="partLegend" aria-label="surface protein domain labels"></div>
+
+              <div class="domain-detail" aria-live="polite">
+                <div>
+                  <strong id="domainName">N-terminal domain (NTD)</strong>
+                  <span id="domainRange">Residues 14-92</span>
+                </div>
+                <div class="domain-copy">
+                  <p id="domainDescription">Click a domain segment to inspect its surface role.</p>
+                  <pre class="nucleotide-box" id="domainNucleotideSequence">ATG</pre>
+                </div>
+              </div>
+
               <div class="triplet-mapper" id="sequenceStrip" aria-label="interactive residue codon triplet map"></div>
+
+              <div class="metric-grid">
+                <div class="metric">
+                  <strong id="surfacePriorityMetric">0.86</strong>
+                  <span>Surface priority</span>
+                </div>
+                <div class="metric">
+                  <strong id="domainMetric">8</strong>
+                  <span>Named regions</span>
+                </div>
+                <div class="metric">
+                  <strong id="epitopeMetric">3</strong>
+                  <span>Target epitopes</span>
+                </div>
+                <div class="metric">
+                  <strong id="mutationMetric">5</strong>
+                  <span>Mutation sites</span>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -2385,66 +2424,6 @@
 
       <section class="screen" id="screen-epitope" data-screen="epitope">
         <div class="epitope-grid">
-          <section class="panel surface-track-panel">
-            <div class="panel-header">
-              <h2>Surface Protein Track</h2>
-              <span class="sub" id="surfaceProteinLabel">Awaiting sequence</span>
-            </div>
-            <div class="section stack">
-              <div class="track-stack">
-                <div class="field-label">
-                  <span id="surfaceTrackTitle">Residue hydropathy profile and exposed candidate markers</span>
-                  <span id="surfaceTrackLength">0 aa</span>
-                </div>
-                <div class="topology-chart-wrap">
-                  <svg class="topology-chart" id="surfaceRail" viewBox="0 0 920 280" role="img" aria-labelledby="topologyChartTitle topologyChartDesc">
-                    <title id="topologyChartTitle">Residue hydropathy profile</title>
-                    <desc id="topologyChartDesc">Line graph of sequence hydropathy with candidate exposed residue markers.</desc>
-                  </svg>
-                </div>
-                <div class="track-labels">
-                  <span>N-term</span>
-                  <span id="surfaceTopologyLabel">Awaiting real sequence input</span>
-                  <span>C-term</span>
-                </div>
-              </div>
-
-              <div class="annotation-lanes" id="annotationLanes" aria-label="surface feature annotation lanes"></div>
-
-              <div class="part-legend" id="partLegend" aria-label="surface protein domain labels"></div>
-
-              <div class="domain-detail" aria-live="polite">
-                <div>
-                  <strong id="domainName">N-terminal domain (NTD)</strong>
-                  <span id="domainRange">Residues 14-92</span>
-                </div>
-                <div class="domain-copy">
-                  <p id="domainDescription">Click a domain segment to inspect its surface role.</p>
-                  <pre class="nucleotide-box" id="domainNucleotideSequence">ATG</pre>
-                </div>
-              </div>
-
-              <div class="metric-grid">
-                <div class="metric">
-                  <strong id="surfacePriorityMetric">0.86</strong>
-                  <span>Surface priority</span>
-                </div>
-                <div class="metric">
-                  <strong id="domainMetric">8</strong>
-                  <span>Named regions</span>
-                </div>
-                <div class="metric">
-                  <strong id="epitopeMetric">3</strong>
-                  <span>Target epitopes</span>
-                </div>
-                <div class="metric">
-                  <strong id="mutationMetric">5</strong>
-                  <span>Mutation sites</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
           <section class="panel epitope-heatmap-panel">
             <div class="panel-header">
               <h2>Epitope Heatmap</h2>
