@@ -3148,6 +3148,32 @@
         });
       }
 
+      function updateScanControls() {
+        els.swarmNodesValue.textContent = els.swarmNodes.value;
+        els.slicePoolValue.textContent = els.slicePool.value;
+        if (!recursionResults.length) els.scanStatus.textContent = `${els.swarmNodes.value} swarm nodes online`;
+      }
+
+      function runParallelScan() {
+        if (!intakeProtein) {
+          showToast("Paste or upload a sequence before running recursion.");
+          renderRecursionResults();
+          renderProteinRanking();
+          return;
+        }
+
+        window.clearTimeout(scanTimer);
+        recursionResults = [];
+        els.scanPanel.classList.add("scanning");
+        els.scanStatus.textContent = `${els.swarmNodes.value} swarm nodes ranking ${els.slicePool.value} slices`;
+        scanTimer = window.setTimeout(() => {
+          ensureRecursionResults();
+          els.scanPanel.classList.remove("scanning");
+          updateSurfaceUI();
+          showToast(`${recursionResults.length} ranked recursion results returned under 400 aa.`);
+        }, 260);
+      }
+
       function surfaceFoldTarget(candidate = getProteinCandidate()) {
         const sequence = candidate.sequence || "";
         if (!sequence) {
@@ -3203,7 +3229,8 @@
       }
 
       function getProteinCandidate(id = selectedProteinId) {
-        return submittedCandidate();
+        const candidates = intakeProtein ? (recursionResults.length ? recursionResults : ensureRecursionResults()) : [];
+        return candidates.find(candidate => candidate.id === id) || candidates[0] || submittedCandidate();
       }
 
       function getSelectedDomain(candidate = getProteinCandidate()) {
@@ -3573,12 +3600,12 @@
 
       function renderProteinRanking() {
         els.proteinRankingRows.innerHTML = "";
-        const candidates = intakeProtein ? [submittedCandidate()] : [];
+        const candidates = intakeProtein ? ensureRecursionResults() : [];
         if (!candidates.length) {
           const row = document.createElement("tr");
           const cell = document.createElement("td");
           cell.colSpan = 4;
-          cell.textContent = "Awaiting sequence";
+          cell.textContent = "Awaiting recursion results";
           row.append(cell);
           els.proteinRankingRows.append(row);
           return;
@@ -3590,22 +3617,22 @@
           row.dataset.proteinId = candidate.id;
           row.tabIndex = 0;
           row.setAttribute("role", "button");
-          row.setAttribute("aria-label", `Open ${candidate.name} in the structure model step`);
+          row.setAttribute("aria-label", `Generate step 3 visual for ${candidate.name}`);
 
-          const protein = document.createElement("td");
+          const window = document.createElement("td");
           const name = document.createElement("div");
           name.className = "rank-name";
           const strong = document.createElement("strong");
-          strong.textContent = candidate.name;
+          strong.textContent = `${candidate.sourceStart}-${candidate.sourceEnd}`;
           const subtitle = document.createElement("span");
           subtitle.textContent = candidate.subtitle;
           name.append(strong, subtitle);
-          protein.append(name);
+          window.append(name);
 
-          const signal = document.createElement("td");
-          signal.textContent = candidate.signal;
-          const tm = document.createElement("td");
-          tm.textContent = candidate.tm;
+          const length = document.createElement("td");
+          length.textContent = candidate.sequence.length.toString();
+          const scoreCell = document.createElement("td");
+          scoreCell.textContent = candidate.scoreLabel;
           const rank = document.createElement("td");
           const score = document.createElement("span");
           score.className = "score";
@@ -3613,7 +3640,7 @@
           score.textContent = candidate.rank.toString();
           rank.append(score);
 
-          row.append(protein, signal, tm, rank);
+          row.append(window, length, scoreCell, rank);
           els.proteinRankingRows.append(row);
         });
       }
@@ -3638,6 +3665,7 @@
           els.domainRange.textContent = "0 aa";
           els.domainDescription.textContent = "Paste or upload sequence data to inspect topology.";
           els.domainNucleotideSequence.textContent = "";
+          renderRecursionResults();
           renderProteinRanking();
           syncSurfaceEsmVisual(candidate);
           return;
@@ -3656,6 +3684,7 @@
         renderPartLegend(candidate);
         renderSequenceStrip(candidate);
         updateDomainDetail(candidate);
+        renderRecursionResults();
         renderProteinRanking();
         syncSurfaceEsmVisual(candidate);
       }
@@ -3711,12 +3740,26 @@
 
       function openSelectedProtein() {
         const candidate = getProteinCandidate();
-        setStructureTarget(candidate.name, candidate.sequence, `${candidate.name} sequence`, candidate.epitopes.length);
+        if (!candidate.sequence.length) {
+          showToast("Run recursion on a sequence first.");
+          return;
+        }
+        if (candidate.sequence.length >= ESM_SEQUENCE_LIMIT) {
+          showToast("Select a recursed result under 400 amino acids.");
+          return;
+        }
+        setStructureTarget(
+          `#${candidate.rank} ${candidate.name}`,
+          candidate.sequence,
+          `Recursion rank ${candidate.rank} | residues ${candidate.sourceStart}-${candidate.sourceEnd}`,
+          candidate.epitopes.length
+        );
         currentPdb = "";
-        els.stateText.textContent = "Sequence ready";
-        showStructurePrompt("Fold selected sequence with ESM Atlas.");
+        els.stateText.textContent = "Folding";
+        showStructurePrompt("Generating selected recursion result with ESM Atlas.");
         switchView("structure");
-        showToast(`${candidate.name} loaded into the structure model step.`);
+        window.setTimeout(() => foldWithAtlas(), 80);
+        showToast(`Generating step 3 visual for ranked result ${candidate.rank}.`);
       }
 
       function selectProteinCandidate(id, options = {}) {
@@ -3751,6 +3794,9 @@
         intakeProtein = protein;
         intakeDnaLength = dnaLength;
         intakeCodonTriplets = codons.length === protein.length ? codons : proteinToCodons(protein);
+        recursionResults = [];
+        selectedProteinId = protein.length ? "" : "submitted";
+        selectedDomainId = "";
         selectedTripletIndex = protein.length ? clampedTripletIndex({ sequence: protein }, selectedTripletIndex) : 0;
         els.detectedType.textContent = sourceLabel || (kind === "dna" ? "DNA detected" : kind === "protein" ? "Protein detected" : "Awaiting sequence");
         els.inputKind.textContent = kind === "dna" ? "DNA/RNA" : kind === "protein" ? "Protein" : "None";
@@ -4316,6 +4362,7 @@
       setStructureTarget("Target Protein", "", "Awaiting sequence", 0);
       showStructurePrompt("Load a sequence from Input, then fold with ESM Atlas.");
       renderAminoChains();
+      updateScanControls();
 
       els.steps.forEach(step => step.addEventListener("click", () => switchView(step.dataset.view)));
       document.querySelectorAll("[data-jump]").forEach(button => {
@@ -4331,6 +4378,13 @@
       els.partLegend.addEventListener("click", event => {
         const card = event.target.closest("[data-domain-id]");
         if (card) selectDomain(card.dataset.domainId);
+      });
+      els.swarmNodes.addEventListener("input", updateScanControls);
+      els.slicePool.addEventListener("input", updateScanControls);
+      els.runParallelScanButton.addEventListener("click", runParallelScan);
+      els.sliceCards.addEventListener("click", event => {
+        const card = event.target.closest("[data-protein-id]");
+        if (card) selectProteinCandidate(card.dataset.proteinId, { openStructure: true });
       });
       els.sequenceStrip.addEventListener("click", event => {
         const step = event.target.closest("[data-triplet-step]");
