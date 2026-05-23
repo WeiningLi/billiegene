@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Billie Gene Protein Model</title>
+    <title>Billie Gene</title>
+    <link rel="icon" href="data:,">
     <script src="https://cdn.jsdelivr.net/npm/3dmol@2.4.2/build/3Dmol-min.js"></script>
     <style>
       :root {
@@ -36,6 +37,10 @@
       textarea,
       input {
         font: inherit;
+      }
+
+      button {
+        cursor: pointer;
       }
 
       .app {
@@ -102,6 +107,12 @@
         background: rgba(0, 140, 137, 0.08);
       }
 
+      .pill[data-tone="rose"] {
+        border-color: rgba(198, 73, 93, 0.3);
+        color: #9a3144;
+        background: rgba(198, 73, 93, 0.08);
+      }
+
       .stepper {
         background: #ffffff;
         border-bottom: 1px solid var(--line);
@@ -110,19 +121,24 @@
       }
 
       .steps {
-        min-width: 880px;
+        min-width: 930px;
         display: grid;
         grid-template-columns: repeat(6, 1fr);
-        gap: 0;
       }
 
       .step {
-        position: relative;
-        padding: 14px 18px 13px;
+        min-height: 50px;
+        padding: 13px 18px;
+        border: 0;
         border-left: 1px solid var(--line);
+        background: transparent;
         color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 9px;
         font-size: 13px;
         font-weight: 700;
+        text-align: left;
         white-space: nowrap;
       }
 
@@ -136,30 +152,104 @@
         place-items: center;
         width: 22px;
         height: 22px;
-        margin-right: 8px;
+        flex: 0 0 22px;
         border-radius: 50%;
         background: #edf0ed;
         color: #535861;
         font-size: 11px;
+        font-weight: 800;
       }
 
       .step.active {
         color: var(--ink);
+        box-shadow: inset 0 -3px 0 var(--teal);
       }
 
       .step.active::before {
-        background: var(--teal);
         color: white;
+        background: var(--teal);
       }
 
-      .workspace {
+      .screen {
+        display: none;
         width: min(1500px, 100%);
         margin: 0 auto;
-        padding: 24px 32px 28px;
+        padding: 24px 32px 32px;
+      }
+
+      .screen.active {
+        display: block;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: minmax(420px, 1.1fr) minmax(320px, 0.9fr);
+        gap: 18px;
+      }
+
+      .grid-3 {
         display: grid;
         grid-template-columns: minmax(260px, 360px) minmax(420px, 1fr) minmax(280px, 360px);
         gap: 18px;
         align-items: stretch;
+      }
+
+      .surface-grid {
+        display: grid;
+        grid-template-columns: minmax(520px, 1fr) minmax(320px, 420px);
+        grid-template-areas:
+          "visual recursion"
+          "track recursion";
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      .epitope-grid {
+        display: grid;
+        grid-template-columns: minmax(560px, 1fr) minmax(320px, 420px);
+        grid-template-areas:
+          "track track"
+          "heatmap ranked";
+        gap: 18px;
+        align-items: start;
+      }
+
+      .surface-visual-panel {
+        grid-area: visual;
+        display: grid;
+        grid-template-rows: auto minmax(360px, 52vh) auto;
+      }
+
+      .surface-recursion-panel {
+        grid-area: recursion;
+      }
+
+      .surface-track-panel {
+        grid-area: track;
+      }
+
+      .surface-ranking-panel {
+        grid-area: ranking;
+      }
+
+      .epitope-heatmap-panel {
+        grid-area: heatmap;
+      }
+
+      .epitope-ranked-panel {
+        grid-area: ranked;
+      }
+
+      .input-workspace {
+        min-height: calc(100vh - 220px);
+        display: grid;
+        align-content: center;
+        justify-items: center;
+        padding-block: clamp(10px, 4vh, 44px);
+      }
+
+      .input-panel {
+        width: min(980px, 100%);
       }
 
       .panel {
@@ -168,6 +258,7 @@
         border-radius: 8px;
         box-shadow: var(--shadow);
         min-width: 0;
+        overflow: hidden;
       }
 
       .panel-header {
@@ -194,14 +285,13 @@
         white-space: nowrap;
       }
 
-      .left-panel,
-      .right-panel {
-        display: grid;
-        grid-template-rows: auto 1fr;
-      }
-
       .section {
         padding: 18px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 14px;
       }
 
       .field-label {
@@ -216,16 +306,19 @@
         letter-spacing: 0.08em;
       }
 
-      textarea {
+      textarea,
+      input {
         width: 100%;
-        height: 176px;
-        margin-top: 10px;
-        padding: 12px;
         border: 1px solid var(--line-strong);
         border-radius: 6px;
-        resize: vertical;
         color: #171a1d;
         background: #fbfcfb;
+      }
+
+      textarea {
+        min-height: 178px;
+        padding: 12px;
+        resize: vertical;
         font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
         font-size: 12px;
         line-height: 1.45;
@@ -239,14 +332,14 @@
       }
 
       .actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-wrap: wrap;
         gap: 10px;
-        margin-top: 12px;
       }
 
       .button {
         min-height: 38px;
+        padding: 8px 14px;
         border: 1px solid #1d1f23;
         border-radius: 6px;
         background: #1d1f23;
@@ -266,16 +359,193 @@
         opacity: 0.62;
       }
 
-      .protein-meta {
-        margin-top: 18px;
+      .upload-zone {
+        min-height: 178px;
+        border: 1px dashed var(--line-strong);
+        border-radius: 8px;
+        background: #fbfcfb;
+        padding: 18px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+      }
+
+      .upload-zone strong,
+      .upload-zone span {
+        display: block;
+      }
+
+      .upload-zone strong {
+        font-size: 15px;
+      }
+
+      .upload-zone span {
+        margin-top: 7px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .upload-zone input {
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .sequence-composer {
+        display: grid;
+        overflow: hidden;
+        border: 1px solid var(--line-strong);
+        border-radius: 8px;
+        background: #fbfcfb;
+        transition: border-color 140ms ease, box-shadow 140ms ease;
+      }
+
+      .sequence-composer:focus-within {
+        border-color: rgba(47, 103, 216, 0.58);
+        box-shadow: 0 0 0 3px rgba(47, 103, 216, 0.12);
+      }
+
+      .composer-label {
+        padding: 14px 16px 0;
+      }
+
+      .sequence-composer textarea {
+        min-height: clamp(220px, 34vh, 360px);
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        resize: vertical;
+      }
+
+      .sequence-composer textarea:focus {
+        outline: 0;
+      }
+
+      .composer-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px;
         border-top: 1px solid var(--line);
-        padding-top: 16px;
+        background: #ffffff;
+      }
+
+      .upload-action {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        min-width: min(320px, 100%);
+        min-height: 38px;
+        gap: 10px;
+        padding: 7px 11px;
+        border: 1px solid var(--line-strong);
+        border-radius: 6px;
+        background: #fbfcfb;
+        color: #30343a;
+        cursor: pointer;
+      }
+
+      .upload-action span,
+      .upload-action strong {
+        display: block;
+      }
+
+      .upload-action span {
+        flex: 0 0 auto;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .upload-action strong {
+        min-width: 0;
+        overflow: hidden;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .upload-action input {
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .attachment-tray {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 12px;
+        border-top: 1px solid var(--line);
+        background: rgba(0, 140, 137, 0.07);
+      }
+
+      .attachment-tray[hidden] {
+        display: none;
+      }
+
+      .attachment-file {
+        min-width: 0;
+        display: grid;
+        gap: 3px;
+      }
+
+      .attachment-file strong {
+        overflow: hidden;
+        color: #005f5d;
+        font-size: 13px;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .attachment-file span {
+        color: #4d5a62;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .attachment-remove {
+        min-height: 30px;
+        flex: 0 0 auto;
+        padding: 5px 9px;
+        border: 1px solid rgba(0, 140, 137, 0.35);
+        border-radius: 6px;
+        background: #ffffff;
+        color: #005f5d;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .composer-footer .actions {
+        margin-left: auto;
+        justify-content: flex-end;
+      }
+
+      .input-notes {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .meta-list {
         display: grid;
         gap: 12px;
       }
 
       .meta-row {
         display: flex;
+        align-items: baseline;
         justify-content: space-between;
         gap: 12px;
         font-size: 13px;
@@ -290,18 +560,1012 @@
         text-align: right;
       }
 
+      .metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        border-top: 1px solid var(--line);
+        border-left: 1px solid var(--line);
+      }
+
+      .grid-3 .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .metric {
+        min-height: 84px;
+        padding: 14px;
+        border-right: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background: #fbfcfb;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 22px;
+        line-height: 1.1;
+      }
+
+      .metric span {
+        display: block;
+        margin-top: 7px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      .table th,
+      .table td {
+        padding: 11px 12px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      .table th {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .table td:last-child,
+      .table th:last-child {
+        text-align: right;
+      }
+
+      .score {
+        display: inline-flex;
+        min-width: 48px;
+        justify-content: center;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(0, 140, 137, 0.1);
+        color: #006c69;
+        font-weight: 800;
+      }
+
+      .score[data-tone="amber"] {
+        color: #8c5800;
+        background: rgba(217, 144, 20, 0.14);
+      }
+
+      .rank-row {
+        cursor: pointer;
+        transition: background 140ms ease, box-shadow 140ms ease;
+      }
+
+      .rank-row:hover,
+      .rank-row:focus-visible {
+        background: #f5f8f6;
+        outline: 0;
+      }
+
+      .rank-row.selected {
+        background: rgba(0, 140, 137, 0.07);
+        box-shadow: inset 3px 0 0 var(--teal);
+      }
+
+      .rank-name {
+        display: grid;
+        gap: 3px;
+      }
+
+      .rank-name strong {
+        font-size: 13px;
+        line-height: 1.2;
+      }
+
+      .rank-name span {
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.25;
+      }
+
+      .sequence-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfcfb;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        font-size: 12px;
+        line-height: 1;
+      }
+
+      .sequence-strip span {
+        display: inline-grid;
+        place-items: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 4px;
+        background: #eef1ed;
+        color: #3b4047;
+      }
+
+      .sequence-strip span.hot {
+        color: white;
+        background: var(--teal);
+      }
+
+      .triplet-mapper {
+        display: grid;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfcfb;
+      }
+
+      .triplet-map-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .triplet-map-title {
+        min-width: 0;
+        display: grid;
+        gap: 4px;
+      }
+
+      .triplet-map-title strong {
+        color: #242930;
+        font-size: 14px;
+        line-height: 1.25;
+      }
+
+      .triplet-map-title span {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+
+      .triplet-controls {
+        display: flex;
+        gap: 8px;
+        flex: 0 0 auto;
+      }
+
+      .triplet-control {
+        min-width: 58px;
+        min-height: 32px;
+        padding: 6px 9px;
+        border: 1px solid var(--line-strong);
+        border-radius: 6px;
+        background: #ffffff;
+        color: #252a30;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .triplet-control:disabled {
+        cursor: default;
+        opacity: 0.48;
+      }
+
+      .triplet-codon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(68px, 1fr));
+        gap: 6px;
+        max-height: 278px;
+        padding: 2px;
+        overflow: auto;
+      }
+
+      .triplet-codon {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        gap: 4px;
+        min-height: 62px;
+        padding: 7px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #ffffff;
+        color: #252a30;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        text-align: left;
+        transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+      }
+
+      .triplet-codon:hover,
+      .triplet-codon:focus-visible {
+        border-color: rgba(0, 140, 137, 0.36);
+        background: #f4f8f6;
+        outline: 0;
+      }
+
+      .triplet-codon.active {
+        border-color: rgba(0, 140, 137, 0.62);
+        background: rgba(0, 140, 137, 0.1);
+        box-shadow: inset 0 0 0 1px rgba(0, 140, 137, 0.16);
+      }
+
+      .triplet-codon:not(.in-domain) {
+        opacity: 0.56;
+      }
+
+      .triplet-codon-index {
+        color: var(--muted);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+      }
+
+      .triplet-codon strong {
+        color: #171a1d;
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .triplet-codon code {
+        color: #006c69;
+        font-family: inherit;
+        font-size: 12px;
+        font-weight: 900;
+        line-height: 1;
+      }
+
+      .triplet-inspector {
+        display: grid;
+        grid-template-columns: 58px 1fr;
+        gap: 12px;
+        align-items: center;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .triplet-residue-badge {
+        display: grid;
+        place-items: center;
+        width: 54px;
+        height: 54px;
+        border-radius: 8px;
+        background: var(--teal);
+        color: #ffffff;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .triplet-inspector-copy {
+        min-width: 0;
+        display: grid;
+        gap: 8px;
+      }
+
+      .triplet-inspector-copy strong {
+        color: #1c2127;
+        font-size: 15px;
+        line-height: 1.3;
+      }
+
+      .triplet-stat-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+        gap: 7px;
+      }
+
+      .triplet-stat {
+        min-width: 0;
+        padding: 7px 8px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fbfcfb;
+      }
+
+      .triplet-stat span,
+      .triplet-stat strong {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .triplet-stat span {
+        color: var(--muted);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        line-height: 1.2;
+        text-transform: uppercase;
+      }
+
+      .triplet-stat strong {
+        margin-top: 4px;
+        color: #252a30;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        font-size: 12px;
+        line-height: 1.2;
+      }
+
+      .rail {
+        position: relative;
+        height: 72px;
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        background: #e8ebe7;
+        overflow: hidden;
+      }
+
+      .topology-chart-wrap {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+        overflow-x: auto;
+      }
+
+      .topology-chart {
+        display: block;
+        width: 100%;
+        min-width: 760px;
+        height: 280px;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      .chart-grid {
+        stroke: #e4e7e2;
+        stroke-width: 1;
+      }
+
+      .chart-axis {
+        stroke: #252a30;
+        stroke-width: 1.2;
+      }
+
+      .chart-line {
+        fill: none;
+        stroke: var(--blue);
+        stroke-width: 2.1;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+      }
+
+      .chart-zero {
+        stroke: #8e969f;
+        stroke-dasharray: 4 4;
+        stroke-width: 1;
+      }
+
+      .chart-region {
+        fill: rgba(0, 140, 137, 0.08);
+        stroke: rgba(0, 140, 137, 0.28);
+        stroke-width: 1;
+      }
+
+      .chart-marker {
+        stroke: var(--rose);
+        stroke-width: 1.4;
+        stroke-dasharray: 5 4;
+      }
+
+      .chart-label {
+        fill: #39404a;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .chart-tick {
+        fill: var(--muted);
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .chart-legend-swatch {
+        stroke-width: 2.2;
+        stroke-linecap: round;
+      }
+
+      .segment {
+        position: absolute;
+        top: 0;
+        bottom: 24px;
+        display: grid;
+        place-items: center;
+        padding: 0 6px;
+        border: 0;
+        color: white;
+        cursor: pointer;
+        font-size: 10px;
+        font-weight: 800;
+        line-height: 1.15;
+        min-width: 10px;
+        overflow: hidden;
+        text-align: center;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+        text-overflow: ellipsis;
+        transition: filter 140ms ease, outline-color 140ms ease, transform 140ms ease;
+        white-space: nowrap;
+      }
+
+      .segment:hover,
+      .segment:focus-visible {
+        filter: brightness(1.06);
+        outline: 2px solid rgba(21, 21, 21, 0.28);
+        outline-offset: -2px;
+        z-index: 2;
+      }
+
+      .segment.active {
+        outline: 3px solid rgba(21, 21, 21, 0.5);
+        outline-offset: -3px;
+        z-index: 3;
+      }
+
+      .segment.green {
+        background: rgba(67, 132, 95, 0.82);
+      }
+
+      .segment.blue {
+        background: rgba(47, 103, 216, 0.8);
+      }
+
+      .segment.amber {
+        background: rgba(217, 144, 20, 0.78);
+      }
+
+      .segment.teal {
+        background: rgba(0, 140, 137, 0.82);
+      }
+
+      .segment.rose {
+        background: rgba(198, 73, 93, 0.84);
+      }
+
+      .segment.violet {
+        background: rgba(105, 91, 224, 0.84);
+      }
+
+      .segment.gray {
+        background: rgba(95, 105, 117, 0.78);
+      }
+
+      .marker {
+        position: absolute;
+        top: 42px;
+        bottom: 18px;
+        width: 3px;
+        background: #101215;
+      }
+
+      .marker::after {
+        content: attr(data-label);
+        position: absolute;
+        left: 50%;
+        bottom: -16px;
+        transform: translateX(-50%);
+        color: #20242a;
+        font-size: 10px;
+        font-weight: 800;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .track-labels {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .track-stack {
+        display: grid;
+        gap: 10px;
+      }
+
+      .part-legend {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .part-card {
+        min-height: 68px;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fbfcfb;
+        cursor: pointer;
+        text-align: left;
+        transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+      }
+
+      .part-card:hover,
+      .part-card:focus-visible {
+        background: #f4f8f6;
+        border-color: rgba(0, 140, 137, 0.3);
+        outline: 0;
+      }
+
+      .part-card.active {
+        border-color: rgba(0, 140, 137, 0.45);
+        background: rgba(0, 140, 137, 0.08);
+        box-shadow: inset 0 0 0 1px rgba(0, 140, 137, 0.12);
+      }
+
+      .part-card strong {
+        display: block;
+        font-size: 12px;
+        line-height: 1.2;
+      }
+
+      .part-card span {
+        display: block;
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 11px;
+        line-height: 1.3;
+      }
+
+      .domain-detail {
+        display: grid;
+        grid-template-columns: minmax(150px, 0.38fr) 1fr;
+        gap: 12px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfcfb;
+      }
+
+      .domain-detail strong {
+        display: block;
+        font-size: 16px;
+        line-height: 1.2;
+      }
+
+      .domain-detail span {
+        display: block;
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+
+      .domain-detail p {
+        margin: 0;
+        color: #30343a;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .domain-copy {
+        display: grid;
+        gap: 8px;
+      }
+
+      .nucleotide-box {
+        max-height: 116px;
+        margin: 0;
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #ffffff;
+        color: #252a30;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        font-size: 11px;
+        line-height: 1.45;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+
+      .annotation-lanes {
+        display: grid;
+        gap: 9px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfcfb;
+      }
+
+      .annotation-lane {
+        display: grid;
+        grid-template-columns: 128px 1fr;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .annotation-lane strong {
+        color: var(--muted);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        line-height: 1.2;
+        text-transform: uppercase;
+      }
+
+      .annotation-track {
+        position: relative;
+        height: 22px;
+        border-radius: 999px;
+        background: #eef1ed;
+      }
+
+      .annotation-marker {
+        position: absolute;
+        top: 50%;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .annotation-marker.epitope {
+        height: 20px;
+        width: 5px;
+        border-radius: 999px;
+        background: var(--blue);
+      }
+
+      .annotation-marker.glyco {
+        border-radius: 2px;
+        background: #8f54d6;
+        transform: translate(-50%, -50%) rotate(45deg);
+      }
+
+      .annotation-marker.mutation {
+        width: 0;
+        height: 0;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-bottom: 11px solid #ff626d;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .scan-panel {
+        display: grid;
+        gap: 14px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfcfb;
+      }
+
+      .surface-recursion-panel .scan-panel {
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+      }
+
+      .scan-panel.scanning {
+        border-color: rgba(0, 140, 137, 0.45);
+        box-shadow: inset 0 0 0 1px rgba(0, 140, 137, 0.08);
+      }
+
+      .scan-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: start;
+      }
+
+      .scan-kicker,
+      .scan-status,
+      .scan-mode {
+        color: #006c69;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        line-height: 1.4;
+        text-transform: uppercase;
+      }
+
+      .scan-head strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 18px;
+        line-height: 1.18;
+      }
+
+      .scan-status {
+        min-width: 148px;
+        padding: 9px 11px;
+        border: 1px solid rgba(0, 140, 137, 0.28);
+        border-radius: 6px;
+        background: rgba(0, 140, 137, 0.08);
+        text-align: left;
+      }
+
+      .scan-controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .scan-control {
+        display: grid;
+        gap: 9px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .scan-control label {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: #252a30;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.3;
+      }
+
+      .scan-control label span {
+        color: #006c69;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      }
+
+      .scan-control input[type="range"] {
+        width: 100%;
+        accent-color: var(--teal);
+      }
+
+      .recursive-cutter {
+        display: grid;
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .scan-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .scan-window {
+        position: relative;
+        min-height: 88px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.86)),
+          repeating-linear-gradient(90deg, rgba(0, 140, 137, 0.08) 0 1px, transparent 1px 44px);
+        overflow: hidden;
+      }
+
+      .scan-window::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: -18%;
+        width: 18%;
+        background: linear-gradient(90deg, transparent, rgba(0, 140, 137, 0.18), transparent);
+        opacity: 0;
+      }
+
+      .scan-panel.scanning .scan-window::after {
+        opacity: 1;
+        animation: scanSweep 1.35s linear infinite;
+      }
+
+      @keyframes scanSweep {
+        from {
+          transform: translateX(0);
+        }
+        to {
+          transform: translateX(650%);
+        }
+      }
+
+      .scan-sequence-text {
+        position: relative;
+        z-index: 1;
+        color: #6b7078;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        line-height: 1.65;
+        word-break: break-all;
+      }
+
+      .scan-sequence-text span {
+        border-radius: 3px;
+        padding: 1px 0;
+      }
+
+      .scan-sequence-text span.active {
+        background: rgba(0, 140, 137, 0.14);
+        color: #005f5c;
+      }
+
+      .scan-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .scan-metric {
+        padding: 10px;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fbfcfb;
+      }
+
+      .scan-metric span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .scan-metric strong {
+        display: block;
+        margin-top: 5px;
+        color: #252a30;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+        font-size: 14px;
+      }
+
+      .scan-log {
+        display: grid;
+        gap: 8px;
+      }
+
+      .scan-log-row,
+      .slice-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .scan-log-row {
+        padding: 10px 12px;
+        color: #4b525c;
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .scan-log-row strong {
+        color: #006c69;
+      }
+
+      .slice-cards {
+        display: grid;
+        gap: 8px;
+      }
+
+      .slice-card {
+        display: grid;
+        gap: 7px;
+        width: 100%;
+        padding: 12px;
+        color: #4b525c;
+        cursor: pointer;
+        text-align: left;
+      }
+
+      .slice-card:hover,
+      .slice-card:focus-visible,
+      .slice-card.active {
+        border-color: rgba(0, 140, 137, 0.38);
+        background: rgba(0, 140, 137, 0.08);
+        outline: 0;
+      }
+
+      .slice-card strong {
+        color: #252a30;
+        font-size: 14px;
+      }
+
+      .slice-card.active strong {
+        color: #006c69;
+      }
+
+      .slice-card span {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .recursion-ranking {
+        display: grid;
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .recursion-ranking .actions {
+        padding-top: 2px;
+      }
+
+      .epitope-row {
+        cursor: pointer;
+      }
+
+      .epitope-row:hover,
+      .epitope-row:focus-visible {
+        background: #f5f8f6;
+        outline: 0;
+      }
+
+      .epitope-row.selected {
+        background: rgba(0, 140, 137, 0.07);
+        box-shadow: inset 3px 0 0 var(--teal);
+      }
+
+      .decision {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 68px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: rgba(67, 132, 95, 0.12);
+        color: #2f6b47;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .decision[data-tone="amber"] {
+        background: rgba(217, 144, 20, 0.14);
+        color: #8c5800;
+      }
+
+      .decision[data-tone="rose"] {
+        background: rgba(198, 73, 93, 0.12);
+        color: #9a3144;
+      }
+
+      .bar-row {
+        display: grid;
+        grid-template-columns: 86px 1fr 54px;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+      }
+
+      .bar {
+        height: 9px;
+        border-radius: 999px;
+        background: #e5e8e4;
+        overflow: hidden;
+      }
+
+      .bar span {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--teal), var(--blue));
+      }
+
       .viewer-panel {
         display: grid;
         grid-template-rows: auto minmax(430px, 1fr) auto;
-        overflow: hidden;
       }
 
       .toolbar {
         display: flex;
         align-items: center;
+        justify-content: flex-end;
         gap: 8px;
         flex-wrap: wrap;
-        justify-content: flex-end;
       }
 
       .tool-button {
@@ -310,7 +1574,7 @@
         border: 1px solid var(--line);
         border-radius: 6px;
         background: white;
-        color: #2f3338;
+        color: #30343a;
         cursor: pointer;
         font-size: 12px;
         font-weight: 700;
@@ -331,14 +1595,25 @@
           repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.035) 0 1px, transparent 1px 48px);
       }
 
-      #viewer {
+      .surface-viewer-wrap {
+        position: relative;
+        min-height: 360px;
+        background:
+          linear-gradient(rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.82)),
+          repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.035) 0 1px, transparent 1px 42px),
+          repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.035) 0 1px, transparent 1px 42px);
+      }
+
+      #viewer,
+      #fallbackCanvas,
+      #surfaceEsmViewer,
+      #surfaceEsmFallbackCanvas {
         position: absolute;
         inset: 0;
       }
 
-      #fallbackCanvas {
-        position: absolute;
-        inset: 0;
+      #fallbackCanvas,
+      #surfaceEsmFallbackCanvas {
         width: 100%;
         height: 100%;
         display: none;
@@ -367,44 +1642,192 @@
       }
 
       .legend-labels {
-        margin-top: 7px;
         display: flex;
         justify-content: space-between;
+        margin-top: 7px;
         color: var(--muted);
         font-size: 11px;
         font-weight: 700;
       }
 
-      .metric-grid {
+      .heatmap {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
+        grid-template-columns: 112px repeat(8, minmax(44px, 1fr));
+        gap: 4px;
+        align-items: stretch;
+        overflow-x: auto;
       }
 
-      .metric {
-        min-height: 82px;
-        padding: 13px;
+      .heatmap div {
+        min-height: 36px;
+        border-radius: 5px;
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
+      .heat-label {
+        justify-content: start;
+        padding: 0 8px;
+        color: #353a41;
+        background: #eef1ed;
+      }
+
+      .heat-head {
+        color: var(--muted);
+        background: transparent;
+      }
+
+      .heat {
+        color: white;
+      }
+
+      .heat.low {
+        background: #7da87c;
+      }
+
+      .heat.mid {
+        background: #c9a33b;
+      }
+
+      .heat.high {
+        background: #d7772e;
+      }
+
+      .heat.peak {
+        background: #c64a61;
+      }
+
+      .construct-rail {
+        display: grid;
+        grid-template-columns: 0.7fr 0.9fr 1.15fr 0.25fr 1fr 0.25fr 1fr 0.8fr 0.7fr;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        min-height: 62px;
+      }
+
+      .construct-piece {
+        display: grid;
+        place-items: center;
+        padding: 10px 8px;
+        color: white;
+        font-size: 12px;
+        font-weight: 800;
+        text-align: center;
+        border-left: 1px solid rgba(255, 255, 255, 0.55);
+      }
+
+      .construct-piece:first-child {
+        border-left: 0;
+      }
+
+      .construct-piece.utr {
+        background: #5f6f80;
+      }
+
+      .construct-piece.signal {
+        background: var(--green);
+      }
+
+      .construct-piece.epitope {
+        background: var(--blue);
+      }
+
+      .construct-piece.linker {
+        background: var(--amber);
+      }
+
+      .construct-piece.poly {
+        background: var(--teal);
+      }
+
+      .amino-chain-view {
+        display: grid;
+        gap: 10px;
+        padding: 12px;
         border: 1px solid var(--line);
         border-radius: 8px;
         background: #fbfcfb;
       }
 
-      .metric strong {
-        display: block;
-        font-size: 22px;
-        line-height: 1.1;
+      .amino-chain-list {
+        display: grid;
+        gap: 8px;
       }
 
-      .metric span {
+      .amino-chain-row {
+        display: grid;
+        grid-template-columns: minmax(158px, 0.3fr) 1fr;
+        gap: 10px;
+        align-items: start;
+      }
+
+      .amino-chain-meta {
+        min-height: 34px;
+        padding: 7px 9px;
+        border-radius: 6px;
+        background: #eef1ed;
+      }
+
+      .amino-chain-meta strong,
+      .amino-chain-meta span {
         display: block;
-        margin-top: 6px;
-        color: var(--muted);
+      }
+
+      .amino-chain-meta strong {
+        color: #242930;
         font-size: 12px;
-        line-height: 1.35;
+        line-height: 1.25;
       }
 
-      .notes {
-        margin-top: 16px;
+      .amino-chain-meta span {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+
+      .amino-chain-sequence {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 3px;
+        min-height: 34px;
+        padding: 7px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #ffffff;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      }
+
+      .amino-token {
+        display: inline-grid;
+        place-items: center;
+        min-width: 19px;
+        height: 20px;
+        padding: 0 4px;
+        border-radius: 4px;
+        color: #ffffff;
+        font-size: 11px;
+        font-weight: 800;
+        line-height: 1;
+      }
+
+      .amino-token.signal {
+        background: var(--green);
+      }
+
+      .amino-token.epitope {
+        background: var(--blue);
+      }
+
+      .amino-token.linker {
+        background: var(--amber);
+      }
+
+      .note-list {
         display: grid;
         gap: 10px;
       }
@@ -412,7 +1835,7 @@
       .note {
         padding-left: 12px;
         border-left: 3px solid var(--line-strong);
-        color: #33373d;
+        color: #33383f;
         font-size: 13px;
         line-height: 1.4;
       }
@@ -425,101 +1848,40 @@
         border-left-color: var(--rose);
       }
 
-      .track {
-        width: min(1500px, 100%);
-        margin: 0 auto;
-        padding: 0 32px 32px;
-      }
-
-      .track-panel {
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        box-shadow: var(--shadow);
-        overflow: hidden;
-      }
-
-      .track-body {
-        padding: 18px;
+      .summary-band {
         display: grid;
-        grid-template-columns: 1.3fr 1fr;
-        gap: 20px;
-        align-items: center;
+        grid-template-columns: repeat(3, 1fr);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
       }
 
-      .sequence-track {
-        display: grid;
-        gap: 11px;
+      .summary-item {
+        min-height: 92px;
+        padding: 16px 18px;
+        border-left: 1px solid var(--line);
       }
 
-      .rail {
-        position: relative;
-        height: 28px;
-        border-radius: 4px;
-        background: #e9ece8;
-        overflow: hidden;
-        border: 1px solid var(--line);
+      .summary-item:first-child {
+        border-left: 0;
       }
 
-      .segment {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-      }
-
-      .segment.green {
-        background: rgba(66, 133, 91, 0.82);
-      }
-
-      .segment.blue {
-        background: rgba(47, 103, 216, 0.8);
-      }
-
-      .segment.amber {
-        background: rgba(217, 140, 0, 0.78);
-      }
-
-      .marker {
-        position: absolute;
-        top: -5px;
-        bottom: -5px;
-        width: 3px;
-        background: #111;
-      }
-
-      .track-labels {
-        display: flex;
-        justify-content: space-between;
-        color: var(--muted);
-        font-size: 11px;
-        font-weight: 700;
-      }
-
-      .epitopes {
-        display: grid;
-        gap: 8px;
-      }
-
-      .epitope {
-        display: grid;
-        grid-template-columns: 76px 1fr 54px;
-        align-items: center;
-        gap: 10px;
-        font-size: 12px;
-      }
-
-      .bar {
-        height: 8px;
-        border-radius: 999px;
-        background: #e5e8e4;
-        overflow: hidden;
-      }
-
-      .bar span {
+      .summary-item strong {
         display: block;
-        height: 100%;
-        border-radius: inherit;
-        background: linear-gradient(90deg, var(--teal), var(--blue));
+        font-size: 26px;
+      }
+
+      .summary-item span {
+        display: block;
+        margin-top: 7px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .dossier-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
       }
 
       .footer {
@@ -553,24 +1915,47 @@
       }
 
       @media (max-width: 1180px) {
-        .workspace {
-          grid-template-columns: 330px minmax(0, 1fr);
-        }
-
-        .right-panel {
-          grid-column: 1 / -1;
-        }
-
-        .track-body {
+        .grid-3,
+        .grid-2,
+        .surface-grid,
+        .epitope-grid,
+        .input-notes,
+        .dossier-grid {
           grid-template-columns: 1fr;
+        }
+
+        .surface-grid {
+          grid-template-areas:
+            "visual"
+            "recursion"
+            "track";
+        }
+
+        .epitope-grid {
+          grid-template-areas:
+            "track"
+            "heatmap"
+            "ranked";
+        }
+
+        .metric-grid,
+        .summary-band,
+        .part-legend {
+          grid-template-columns: repeat(2, 1fr);
         }
       }
 
-      @media (max-width: 780px) {
+      @media (max-width: 760px) {
         .topbar {
           padding: 18px;
           align-items: flex-start;
           flex-direction: column;
+        }
+
+        .brand {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 6px;
         }
 
         .status-row {
@@ -581,13 +1966,56 @@
           padding: 0 18px;
         }
 
-        .workspace,
-        .track {
-          padding-left: 18px;
-          padding-right: 18px;
+        .screen {
+          padding: 24px 18px 28px;
         }
 
-        .workspace {
+        .panel-header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .metric-grid,
+        .summary-band,
+        .part-legend {
+          grid-template-columns: 1fr;
+        }
+
+        .domain-detail,
+        .annotation-lane,
+        .triplet-inspector,
+        .triplet-stat-row {
+          grid-template-columns: 1fr;
+        }
+
+        .triplet-map-head {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .triplet-controls {
+          width: 100%;
+        }
+
+        .triplet-control {
+          flex: 1 1 0;
+        }
+
+        .construct-rail {
+          grid-template-columns: 1fr;
+        }
+
+        .construct-piece {
+          min-height: 44px;
+          border-left: 0;
+          border-top: 1px solid rgba(255, 255, 255, 0.55);
+        }
+
+        .construct-piece:first-child {
+          border-top: 0;
+        }
+
+        .amino-chain-row {
           grid-template-columns: 1fr;
         }
 
@@ -599,18 +2027,36 @@
           min-height: 360px;
         }
 
-        .panel-header {
-          align-items: flex-start;
-          flex-direction: column;
+        .surface-visual-panel {
+          grid-template-rows: auto minmax(340px, 52vh) auto;
         }
 
-        .toolbar {
+        .surface-viewer-wrap {
+          min-height: 340px;
+        }
+
+        .toolbar,
+        .composer-footer,
+        .actions {
           justify-content: flex-start;
         }
 
-        .actions,
-        .metric-grid {
-          grid-template-columns: 1fr;
+        .composer-footer {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .attachment-tray {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .upload-action {
+          width: 100%;
+        }
+
+        .bar-row {
+          grid-template-columns: 70px 1fr 44px;
         }
       }
     </style>
@@ -620,173 +2066,606 @@
       <header class="topbar">
         <div class="brand">
           <h1>Billie Gene</h1>
-          <span>Protein model screen</span>
+          <span>guided vaccine design workflow</span>
         </div>
-        <div class="status-row" aria-label="model status">
-          <span class="pill" data-tone="teal">ESMFold</span>
-          <span class="pill">PDB loaded</span>
-          <span class="pill">Research use</span>
+        <div class="status-row" aria-label="workflow status">
+          <span class="pill" data-tone="teal">ESMFold ready</span>
+          <span class="pill">6-step workflow</span>
+          <span class="pill" data-tone="rose">Research use</span>
         </div>
       </header>
 
       <nav class="stepper" aria-label="pipeline">
         <div class="steps">
-          <div class="step" data-index="1">Input sequence</div>
-          <div class="step" data-index="2">Surface protein</div>
-          <div class="step active" data-index="3">Structure model</div>
-          <div class="step" data-index="4">Epitope scoring</div>
-          <div class="step" data-index="5">mRNA construct</div>
-          <div class="step" data-index="6">Dossier</div>
+          <button class="step active" type="button" data-view="input" data-index="1">Input sequence</button>
+          <button class="step" type="button" data-view="surface" data-index="2">Surface protein</button>
+          <button class="step" type="button" data-view="structure" data-index="3">Structure model</button>
+          <button class="step" type="button" data-view="epitope" data-index="4">Epitope scoring</button>
+          <button class="step" type="button" data-view="mrna" data-index="5">mRNA construct</button>
+          <button class="step" type="button" data-view="dossier" data-index="6">Dossier</button>
         </div>
       </nav>
 
-      <section class="workspace" aria-label="protein modeling workspace">
-        <aside class="panel left-panel">
-          <div class="panel-header">
-            <h2>Target Protein</h2>
-            <span class="sub" id="sequenceCount">283 aa</span>
-          </div>
-          <div class="section">
-            <label class="field-label" for="sequenceInput">
-              Amino acid sequence
-              <span id="limitState">Under 400</span>
-            </label>
-            <textarea id="sequenceInput" spellcheck="false"></textarea>
-            <div class="actions">
-              <button class="button" id="foldButton" type="button">Fold with ESM Atlas</button>
-              <button class="button secondary" id="demoButton" type="button">Load demo PDB</button>
+      <section class="screen active" id="screen-input" data-screen="input">
+        <div class="input-workspace">
+          <section class="panel input-panel">
+            <div class="panel-header">
+              <h2>Pathogen Sequence</h2>
+              <span class="sub" id="detectedType">Awaiting sequence</span>
             </div>
-            <div class="protein-meta">
-              <div class="meta-row">
-                <span>Source</span>
-                <span id="modelSource">ESM Atlas API</span>
+            <div class="section stack">
+              <div class="sequence-composer">
+                <label class="field-label composer-label" for="rawSequenceInput">
+                  Paste DNA, RNA, protein, or FASTA
+                  <span id="inputLimitState">awaiting sequence</span>
+                </label>
+	                <textarea id="rawSequenceInput" spellcheck="false" placeholder="Paste a sequence or FASTA text"></textarea>
+	                <div class="attachment-tray" id="attachmentTray" hidden>
+	                  <div class="attachment-file">
+	                    <strong id="attachmentName">No file attached</strong>
+	                    <span id="attachmentMeta">0 KB</span>
+	                  </div>
+	                  <button class="attachment-remove" id="clearAttachmentButton" type="button">Remove</button>
+	                </div>
+	                <div class="composer-footer">
+	                  <label class="upload-action" for="sequenceFileInput">
+	                    <span>Attach file</span>
+                    <strong id="fileName">Accepted: .txt, .fa, .fasta, .fna, .faa, .gb</strong>
+                    <input id="sequenceFileInput" type="file" accept=".txt,.fa,.fasta,.fna,.ffn,.faa,.gb,.gbk">
+                  </label>
+                  <div class="actions">
+                    <button class="button secondary" type="button" id="loadDemoVirusButton">Demo virus</button>
+                    <button class="button secondary" type="button" data-jump="surface" aria-label="Continue to surface proteins">Continue</button>
+                    <button class="button" id="useIntakeButton" type="button" aria-label="Use for structure model">Use sequence</button>
+                  </div>
+                </div>
               </div>
-              <div class="meta-row">
-                <span>Model file</span>
-                <span>esmfold-demo.pdb</span>
+              <div class="metric-grid">
+                <div class="metric">
+                  <strong id="inputKind">None</strong>
+                  <span>Detected input</span>
+                </div>
+                <div class="metric">
+                  <strong id="dnaMetric">0</strong>
+                  <span>Nucleotides parsed</span>
+                </div>
+                <div class="metric">
+                  <strong id="proteinMetric">0 aa</strong>
+                  <span>Protein candidate</span>
+                </div>
+                <div class="metric">
+                  <strong id="frameMetric">No frame</strong>
+                  <span>Translation frame</span>
+                </div>
               </div>
-              <div class="meta-row">
-                <span>Surface target</span>
-                <span>Screening candidate</span>
-              </div>
-              <div class="meta-row">
-                <span>State</span>
-                <span id="stateText">Ready</span>
+              <div class="input-notes">
+                <div class="note">DNA/RNA input is translated to the longest readable protein candidate before structure modeling.</div>
+                <div class="note" data-tone="amber">The public ESM Atlas fold endpoint accepts proteins up to 400 amino acids.</div>
               </div>
             </div>
-          </div>
-        </aside>
+          </section>
+        </div>
+      </section>
 
-        <section class="panel viewer-panel">
-          <div class="panel-header">
-            <div>
-              <h2>Structure Viewer</h2>
-              <span class="sub">Colored by local confidence</span>
+      <section class="screen" id="screen-surface" data-screen="surface">
+        <div class="surface-grid">
+          <section class="panel surface-visual-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Meta ESM Sequence Visual</h2>
+                <span class="sub" id="surfaceEsmSource">Awaiting sequence</span>
+              </div>
+              <div class="toolbar" aria-label="surface ESM visual controls">
+                <button class="tool-button" id="surfaceEsmFoldButton" type="button" aria-label="Refresh Step 2 visual">Refresh</button>
+                <button class="tool-button" id="surfaceEsmCenterButton" type="button">Center</button>
+              </div>
             </div>
-            <div class="toolbar" aria-label="viewer controls">
-              <button class="tool-button active" id="cartoonButton" type="button">Cartoon</button>
-              <button class="tool-button" id="surfaceButton" type="button">Surface</button>
-              <button class="tool-button" id="spinButton" type="button">Spin</button>
-              <button class="tool-button" id="centerButton" type="button">Center</button>
+            <div class="surface-viewer-wrap">
+              <div id="surfaceEsmViewer"></div>
+              <canvas id="surfaceEsmFallbackCanvas"></canvas>
+              <div class="viewer-loading" id="surfaceEsmLoading">Awaiting sequence</div>
             </div>
-          </div>
-          <div class="viewer-wrap">
-            <div id="viewer"></div>
-            <canvas id="fallbackCanvas"></canvas>
-            <div class="viewer-loading" id="viewerLoading">Loading model</div>
-          </div>
-          <div class="legend" aria-label="confidence legend">
-            <div class="gradient"></div>
-            <div class="legend-labels">
-              <span>Low confidence</span>
-              <span>Medium</span>
-              <span>High confidence</span>
-            </div>
-          </div>
-        </section>
-
-        <aside class="panel right-panel">
-          <div class="panel-header">
-            <h2>Model Summary</h2>
-            <span class="sub">Current prediction</span>
-          </div>
-          <div class="section">
-            <div class="metric-grid">
+            <div class="metric-grid" aria-label="Meta ESM full sequence summary">
               <div class="metric">
-                <strong id="residueMetric">283</strong>
-                <span>Residues</span>
+                <strong id="surfaceEsmDnaMetric">0</strong>
+                <span>DNA bases</span>
               </div>
               <div class="metric">
-                <strong id="atomMetric">2,152</strong>
+                <strong id="surfaceEsmResidueMetric">0</strong>
+                <span>Modeled residues</span>
+              </div>
+              <div class="metric">
+                <strong id="surfaceEsmAtomMetric">0</strong>
                 <span>Atoms</span>
               </div>
               <div class="metric">
-                <strong id="confidenceMetric">73</strong>
-                <span>Mean local confidence</span>
-              </div>
-              <div class="metric">
-                <strong id="candidateMetric">4</strong>
-                <span>Candidate windows</span>
+                <strong id="surfaceEsmConfidenceMetric">--</strong>
+                <span>Mean confidence</span>
               </div>
             </div>
-            <div class="notes">
-              <div class="note">
-                ESM Atlas returns PDB coordinates for one protein sequence. The viewer reads that PDB directly.
+          </section>
+
+          <aside class="panel surface-recursion-panel">
+            <div class="panel-header">
+              <h2>Recursion Panel</h2>
+              <span class="sub">step 2 cutter</span>
+            </div>
+            <div class="scan-panel" id="scanPanel" aria-label="parallel protein candidate slicing scanner">
+              <div class="scan-head">
+                <div>
+                  <span class="scan-kicker">Parallel slice screen</span>
+                  <strong id="scanTitle">Multi-thread protein candidate slicing evaluator</strong>
+                </div>
+                <span class="scan-status" id="scanStatus">10 swarm nodes online</span>
               </div>
-              <div class="note" data-tone="amber">
-                Fold requests are rate limited and intended for a few predictions, not batch jobs.
+              <div class="scan-controls">
+                <div class="scan-control">
+                  <label for="swarmNodes">Parallel nodes <span id="swarmNodesValue">10</span></label>
+                  <input id="swarmNodes" type="range" min="2" max="16" value="10">
+                </div>
+                <div class="scan-control">
+                  <label for="slicePool">Peptide slices <span id="slicePoolValue">1000</span></label>
+                  <input id="slicePool" type="range" min="100" max="1000" step="100" value="1000">
+                </div>
               </div>
-              <div class="note" data-tone="rose">
-                Predicted structures should be reviewed before any downstream wet-lab decision.
+              <div class="recursive-cutter">
+                <div class="scan-row">
+                  <span class="scan-kicker">Real-time sequence recursive cutter</span>
+                  <span class="scan-mode" id="scanMode">Sliding window</span>
+                </div>
+                <div class="scan-window">
+                  <div class="scan-sequence-text" id="scanSequenceText"></div>
+                </div>
+                <div class="scan-metrics">
+                  <div class="scan-metric">
+                    <span>Active boundary</span>
+                    <strong id="activeBoundary">--</strong>
+                  </div>
+                  <div class="scan-metric">
+                    <span>Target domain</span>
+                    <strong id="activeScanTarget">--</strong>
+                  </div>
+                  <div class="scan-metric">
+                    <span>Sim rating</span>
+                    <strong id="activeScanRating">--</strong>
+                  </div>
+                </div>
+              </div>
+              <div class="scan-log" id="scanLog" aria-live="polite"></div>
+              <div class="slice-cards" id="sliceCards" aria-label="candidate slice results"></div>
+              <button class="button" id="runParallelScanButton" type="button">Run parallel targetability scan</button>
+              <div class="recursion-ranking" aria-label="ranked recursion results">
+                <div class="field-label">
+                  <span>Ranked recursion results</span>
+                  <span>under 400 aa</span>
+                </div>
+                <table class="table" aria-label="clickable ranked recursion results">
+                  <thead>
+                    <tr>
+                      <th>Window</th>
+                      <th>AA</th>
+                      <th>Score</th>
+                      <th>Rank</th>
+                    </tr>
+                  </thead>
+                  <tbody id="proteinRankingRows"></tbody>
+                </table>
+                <div class="actions">
+                  <button class="button" id="openSelectedProteinButton" type="button">Generate selected visual</button>
+                  <button class="button secondary" type="button" data-jump="epitope">Open epitopes</button>
+                </div>
               </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+
+        </div>
       </section>
 
-      <section class="track" aria-label="surface protein track">
-        <div class="track-panel">
-          <div class="panel-header">
-            <h2>Surface Protein Track</h2>
-            <span class="sub">Epitope-ready view</span>
-          </div>
-          <div class="track-body">
-            <div class="sequence-track">
-              <div class="rail" aria-label="sequence feature track">
-                <span class="segment green" style="left: 4%; width: 22%;"></span>
-                <span class="segment blue" style="left: 31%; width: 18%;"></span>
-                <span class="segment amber" style="left: 56%; width: 17%;"></span>
-                <span class="segment green" style="left: 78%; width: 15%;"></span>
-                <span class="marker" style="left: 18%;"></span>
-                <span class="marker" style="left: 46%;"></span>
-                <span class="marker" style="left: 69%;"></span>
+      <section class="screen" id="screen-structure" data-screen="structure">
+        <div class="grid-3">
+          <aside class="panel">
+            <div class="panel-header">
+              <h2 id="targetProteinTitle">Target Protein</h2>
+              <span class="sub" id="structureSequenceCount">283 aa</span>
+            </div>
+            <div class="section stack">
+              <label class="field-label" for="structureSequenceInput">
+                amino acid sequence
+                <span id="structureLimitState">under 400</span>
+              </label>
+              <textarea id="structureSequenceInput" spellcheck="false"></textarea>
+              <div class="actions">
+                <button class="button" id="foldButton" type="button">Fold with ESM Atlas</button>
               </div>
-              <div class="track-labels">
-                <span>N-term</span>
-                <span>surface exposed regions</span>
-                <span>C-term</span>
+              <div class="meta-list">
+                <div class="meta-row">
+                  <span>Source</span>
+                  <span id="modelSource">Awaiting sequence</span>
+                </div>
+                <div class="meta-row">
+                  <span>Model file</span>
+                  <span>Generated after fold</span>
+                </div>
+                <div class="meta-row">
+                  <span>Surface target</span>
+                  <span id="surfaceTargetMeta">Spike glycoprotein (S)</span>
+                </div>
+                <div class="meta-row">
+                  <span>State</span>
+                  <span id="stateText">Awaiting sequence</span>
+                </div>
               </div>
             </div>
-            <div class="epitopes">
-              <div class="epitope">
+          </aside>
+
+          <section class="panel viewer-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Structure Viewer</h2>
+                <span class="sub">colored by local confidence</span>
+              </div>
+              <div class="toolbar" aria-label="viewer controls">
+                <button class="tool-button active" id="cartoonButton" type="button">Cartoon</button>
+                <button class="tool-button" id="surfaceButton" type="button">Surface</button>
+                <button class="tool-button" id="spinButton" type="button">Spin</button>
+                <button class="tool-button" id="centerButton" type="button">Center</button>
+              </div>
+            </div>
+            <div class="viewer-wrap">
+              <div id="viewer"></div>
+              <canvas id="fallbackCanvas"></canvas>
+            <div class="viewer-loading" id="viewerLoading">Awaiting sequence</div>
+            </div>
+            <div class="legend" aria-label="confidence legend">
+              <div class="gradient"></div>
+              <div class="legend-labels">
+                <span>Low confidence</span>
+                <span>Medium</span>
+                <span>High confidence</span>
+              </div>
+            </div>
+          </section>
+
+          <aside class="panel">
+            <div class="panel-header">
+              <h2>Model Summary</h2>
+              <span class="sub">current prediction</span>
+            </div>
+            <div class="section stack">
+              <div class="metric-grid">
+                <div class="metric">
+                  <strong id="residueMetric">283</strong>
+                  <span>Residues</span>
+                </div>
+                <div class="metric">
+                  <strong id="atomMetric">2,152</strong>
+                  <span>Atoms</span>
+                </div>
+                <div class="metric">
+                  <strong id="confidenceMetric">73</strong>
+                  <span>Mean local confidence</span>
+                </div>
+                <div class="metric">
+                  <strong id="candidateWindowMetric">3</strong>
+                  <span>Candidate windows</span>
+                </div>
+              </div>
+              <div class="note-list">
+                <div class="note">ESM Atlas returns PDB coordinates for one protein sequence. The viewer reads that PDB directly.</div>
+                <div class="note" data-tone="amber">Fold requests are rate limited and intended for a few predictions, not batch jobs.</div>
+                <div class="note" data-tone="rose">Predicted structures should be reviewed before any downstream wet-lab decision.</div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-epitope" data-screen="epitope">
+        <div class="epitope-grid">
+          <section class="panel surface-track-panel">
+            <div class="panel-header">
+              <h2>Surface Protein Track</h2>
+              <span class="sub" id="surfaceProteinLabel">Awaiting sequence</span>
+            </div>
+            <div class="section stack">
+              <div class="track-stack">
+                <div class="field-label">
+                  <span id="surfaceTrackTitle">Residue hydropathy profile and exposed candidate markers</span>
+                  <span id="surfaceTrackLength">0 aa</span>
+                </div>
+                <div class="topology-chart-wrap">
+                  <svg class="topology-chart" id="surfaceRail" viewBox="0 0 920 280" role="img" aria-labelledby="topologyChartTitle topologyChartDesc">
+                    <title id="topologyChartTitle">Residue hydropathy profile</title>
+                    <desc id="topologyChartDesc">Line graph of sequence hydropathy with candidate exposed residue markers.</desc>
+                  </svg>
+                </div>
+                <div class="track-labels">
+                  <span>N-term</span>
+                  <span id="surfaceTopologyLabel">Awaiting real sequence input</span>
+                  <span>C-term</span>
+                </div>
+              </div>
+
+              <div class="annotation-lanes" id="annotationLanes" aria-label="surface feature annotation lanes"></div>
+
+              <div class="part-legend" id="partLegend" aria-label="surface protein domain labels"></div>
+
+              <div class="domain-detail" aria-live="polite">
+                <div>
+                  <strong id="domainName">N-terminal domain (NTD)</strong>
+                  <span id="domainRange">Residues 14-92</span>
+                </div>
+                <div class="domain-copy">
+                  <p id="domainDescription">Click a domain segment to inspect its surface role.</p>
+                  <pre class="nucleotide-box" id="domainNucleotideSequence">ATG</pre>
+                </div>
+              </div>
+
+              <div class="triplet-mapper" id="sequenceStrip" aria-label="interactive residue codon triplet map"></div>
+
+              <div class="metric-grid">
+                <div class="metric">
+                  <strong id="surfacePriorityMetric">0.86</strong>
+                  <span>Surface priority</span>
+                </div>
+                <div class="metric">
+                  <strong id="domainMetric">8</strong>
+                  <span>Named regions</span>
+                </div>
+                <div class="metric">
+                  <strong id="epitopeMetric">3</strong>
+                  <span>Target epitopes</span>
+                </div>
+                <div class="metric">
+                  <strong id="mutationMetric">5</strong>
+                  <span>Mutation sites</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel epitope-heatmap-panel">
+            <div class="panel-header">
+              <h2>Epitope Heatmap</h2>
+              <span class="sub">binding and exposure</span>
+            </div>
+            <div class="section stack">
+              <div class="heatmap" aria-label="epitope heatmap">
+                <div class="heat-head"></div>
+                <div class="heat-head">12-33</div>
+                <div class="heat-head">46-68</div>
+                <div class="heat-head">88-112</div>
+                <div class="heat-head">130-151</div>
+                <div class="heat-head">163-191</div>
+                <div class="heat-head">198-219</div>
+                <div class="heat-head">226-251</div>
+                <div class="heat-head">260-279</div>
+                <div class="heat-label">HLA-A*02:01</div>
+                <div class="heat peak">0.91</div><div class="heat mid">0.61</div><div class="heat high">0.78</div><div class="heat low">0.42</div><div class="heat mid">0.67</div><div class="heat low">0.38</div><div class="heat high">0.83</div><div class="heat low">0.31</div>
+                <div class="heat-label">HLA-B*07:02</div>
+                <div class="heat high">0.80</div><div class="heat low">0.46</div><div class="heat peak">0.88</div><div class="heat mid">0.64</div><div class="heat high">0.73</div><div class="heat low">0.40</div><div class="heat mid">0.69</div><div class="heat low">0.34</div>
+                <div class="heat-label">HLA-DRB1*04</div>
+                <div class="heat mid">0.66</div><div class="heat high">0.76</div><div class="heat high">0.74</div><div class="heat low">0.49</div><div class="heat peak">0.86</div><div class="heat mid">0.63</div><div class="heat high">0.79</div><div class="heat low">0.45</div>
+                <div class="heat-label">Surface score</div>
+                <div class="heat peak">0.89</div><div class="heat low">0.39</div><div class="heat high">0.74</div><div class="heat mid">0.56</div><div class="heat high">0.71</div><div class="heat low">0.44</div><div class="heat peak">0.87</div><div class="heat mid">0.59</div>
+              </div>
+              <div class="metric-grid">
+                <div class="metric">
+                  <strong>4</strong>
+                  <span>Primary epitope windows</span>
+                </div>
+                <div class="metric">
+                  <strong>0.82</strong>
+                  <span>Top aggregate score</span>
+                </div>
+                <div class="metric">
+                  <strong>78%</strong>
+                  <span>Population coverage proxy</span>
+                </div>
+                <div class="metric">
+                  <strong>Low</strong>
+                  <span>Self-match flag</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="panel epitope-ranked-panel">
+            <div class="panel-header">
+              <h2>Ranked Epitopes</h2>
+              <span class="sub">selected windows</span>
+            </div>
+            <div class="section stack">
+              <div class="bar-row">
                 <strong>12-33</strong>
                 <div class="bar"><span style="width: 82%;"></span></div>
                 <span>0.82</span>
               </div>
-              <div class="epitope">
+              <div class="bar-row">
                 <strong>88-112</strong>
                 <div class="bar"><span style="width: 74%;"></span></div>
                 <span>0.74</span>
               </div>
-              <div class="epitope">
+              <div class="bar-row">
                 <strong>163-191</strong>
                 <div class="bar"><span style="width: 68%;"></span></div>
                 <span>0.68</span>
               </div>
-              <div class="epitope">
+              <div class="bar-row">
                 <strong>226-251</strong>
                 <div class="bar"><span style="width: 79%;"></span></div>
                 <span>0.79</span>
+              </div>
+              <div class="actions">
+                <button class="button" type="button" data-jump="mrna">Build construct</button>
+                <button class="button secondary" type="button" data-jump="structure">Review structure</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-mrna" data-screen="mrna">
+        <div class="grid-2">
+          <section class="panel">
+            <div class="panel-header">
+              <h2>mRNA Construct</h2>
+              <span class="sub">concept design</span>
+            </div>
+            <div class="section stack">
+              <div class="construct-rail" aria-label="mRNA construct diagram">
+                <div class="construct-piece utr">5' UTR</div>
+                <div class="construct-piece signal">signal peptide</div>
+                <div class="construct-piece epitope">epitope 12-33</div>
+                <div class="construct-piece linker">GSG</div>
+                <div class="construct-piece epitope">epitope 88-112</div>
+                <div class="construct-piece linker">GSG</div>
+                <div class="construct-piece epitope">epitope 226-251</div>
+                <div class="construct-piece utr">3' UTR</div>
+                <div class="construct-piece poly">poly(A)</div>
+              </div>
+              <div class="amino-chain-view" aria-label="amino acid chain display">
+                <div class="field-label">
+                  <span>Amino acid chains</span>
+                  <span id="constructAminoTotal">0 aa coding cassette</span>
+                </div>
+                <div class="amino-chain-list" id="aminoChainList"></div>
+              </div>
+              <table class="table" aria-label="construct module table">
+                <thead>
+                  <tr>
+                    <th>Module</th>
+                    <th>Length</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Signal peptide</td>
+                    <td>21 aa</td>
+                    <td>Trafficking</td>
+                    <td><span class="score">Keep</span></td>
+                  </tr>
+                  <tr>
+                    <td>Epitope cassette</td>
+                    <td>73 aa</td>
+                    <td>Antigen payload</td>
+                    <td><span class="score">Rank 1</span></td>
+                  </tr>
+                  <tr>
+                    <td>Linkers</td>
+                    <td>6 aa</td>
+                    <td>Spacing</td>
+                    <td><span class="score">Clean</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <aside class="panel">
+            <div class="panel-header">
+              <h2>Construct Checks</h2>
+              <span class="sub">frontend preview</span>
+            </div>
+            <div class="section stack">
+              <div class="metric-grid">
+                <div class="metric">
+                  <strong>312 nt</strong>
+                  <span>Coding region</span>
+                </div>
+                <div class="metric">
+                  <strong>54%</strong>
+                  <span>GC estimate</span>
+                </div>
+                <div class="metric">
+                  <strong>0</strong>
+                  <span>Stop codons</span>
+                </div>
+                <div class="metric">
+                  <strong>2</strong>
+                  <span>Review flags</span>
+                </div>
+              </div>
+              <div class="note-list">
+                <div class="note">Codon and UTR choices are placeholders for frontend review.</div>
+                <div class="note" data-tone="amber">Manufacturing, stability, and immunogenicity checks require external validation.</div>
+              </div>
+              <div class="actions">
+                <button class="button" type="button" data-jump="dossier">Create dossier</button>
+                <button class="button secondary" type="button" data-jump="epitope">Adjust epitopes</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-dossier" data-screen="dossier">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Candidate Dossier</h2>
+            <span class="sub">candidate package</span>
+          </div>
+          <div class="summary-band">
+            <div class="summary-item">
+              <strong>0.82</strong>
+              <span>Lead epitope score</span>
+            </div>
+            <div class="summary-item">
+              <strong>73</strong>
+              <span>Mean model confidence</span>
+            </div>
+            <div class="summary-item">
+              <strong>78%</strong>
+              <span>Coverage proxy</span>
+            </div>
+          </div>
+          <div class="section dossier-grid">
+            <div class="stack">
+              <h2 style="margin: 0; font-size: 17px;">Evidence Summary</h2>
+              <table class="table" aria-label="evidence summary">
+                <thead>
+                  <tr>
+                    <th>Evidence</th>
+                    <th>Result</th>
+                    <th>Confidence</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Surface exposure</td>
+                    <td>4 exposed windows</td>
+                    <td><span class="score">High</span></td>
+                  </tr>
+                  <tr>
+                    <td>Structure model</td>
+                    <td>283 residue PDB</td>
+                    <td><span class="score">73</span></td>
+                  </tr>
+                  <tr>
+                    <td>Epitope screen</td>
+                    <td>4 selected windows</td>
+                    <td><span class="score">0.82</span></td>
+                  </tr>
+                  <tr>
+                    <td>Construct design</td>
+                    <td>Concept cassette</td>
+                    <td><span class="score" data-tone="amber">Review</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="stack">
+              <h2 style="margin: 0; font-size: 17px;">Export Queue</h2>
+              <div class="note-list">
+                <div class="note">Sequence FASTA, predicted PDB, selected epitope table, and construct map are ready for export.</div>
+                <div class="note" data-tone="amber">Clinical, therapeutic, and wet-lab readiness are outside this prototype.</div>
+                <div class="note" data-tone="rose">Population-level safety and pharmacogenomic risk signals need expert review.</div>
+              </div>
+              <div class="actions">
+                <button class="button" type="button" data-toast="Report export queued.">Download report</button>
+                <button class="button secondary" type="button" data-jump="input">Start another candidate</button>
               </div>
             </div>
           </div>
@@ -800,17 +2679,173 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script>
-      const sampleSequence = "GENGEIPLEIRATTGAEVDTRAVTAVEMTEGTLGIFRLPEEDYTALENFRYNRVAGENWKPASTVIYVGGTYARLCAYAPYNSVEFKNSSLKTEAGLTMQTYAAEKDMRFAVSGGDEVWKKTPTANFELKRAYARLVLSVVRDATYPNTCKITKAKIEAFTGNIITANTVDISTGTEGSGTQTPQYIHTVTTGLKDGFAIGLPQQTFSGGVVLTLTVDGMEYSVTIPANKLSTFVRGTKYIVSLAVKGGKLTLMSDKILIDKDWAEVQTGTGGSGDDYDTSFN";
+      const referenceSequence = "GENGEIPLEIRATTGAEVDTRAVTAVEMTEGTLGIFRLPEEDYTALENFRYNRVAGENWKPASTVIYVGGTYARLCAYAPYNSVEFKNSSLKTEAGLTMQTYAAEKDMRFAVSGGDEVWKKTPTANFELKRAYARLVLSVVRDATYPNTCKITKAKIEAFTGNIITANTVDISTGTEGSGTQTPQYIHTVTTGLKDGFAIGLPQQTFSGGVVLTLTVDGMEYSVTIPANKLSTFVRGTKYIVSLAVKGGKLTLMSDKILIDKDWAEVQTGTGGSGDDYDTSFN";
+      const codonTable = {
+        TTT: "F", TTC: "F", TTA: "L", TTG: "L", TCT: "S", TCC: "S", TCA: "S", TCG: "S",
+        TAT: "Y", TAC: "Y", TAA: "*", TAG: "*", TGT: "C", TGC: "C", TGA: "*", TGG: "W",
+        CTT: "L", CTC: "L", CTA: "L", CTG: "L", CCT: "P", CCC: "P", CCA: "P", CCG: "P",
+        CAT: "H", CAC: "H", CAA: "Q", CAG: "Q", CGT: "R", CGC: "R", CGA: "R", CGG: "R",
+        ATT: "I", ATC: "I", ATA: "I", ATG: "M", ACT: "T", ACC: "T", ACA: "T", ACG: "T",
+        AAT: "N", AAC: "N", AAA: "K", AAG: "K", AGT: "S", AGC: "S", AGA: "R", AGG: "R",
+        GTT: "V", GTC: "V", GTA: "V", GTG: "V", GCT: "A", GCC: "A", GCA: "A", GCG: "A",
+        GAT: "D", GAC: "D", GAA: "E", GAG: "E", GGT: "G", GGC: "G", GGA: "G", GGG: "G"
+      };
+      const codonBackbone = {
+        A: "GCT", C: "TGT", D: "GAT", E: "GAA", F: "TTT", G: "GGT", H: "CAT", I: "ATT",
+        K: "AAA", L: "CTG", M: "ATG", N: "AAT", P: "CCT", Q: "CAA", R: "CGT", S: "TCT",
+        T: "ACT", V: "GTT", W: "TGG", Y: "TAT"
+      };
+      const aminoAcidNames = {
+        A: "Alanine", C: "Cysteine", D: "Aspartic acid", E: "Glutamic acid", F: "Phenylalanine",
+        G: "Glycine", H: "Histidine", I: "Isoleucine", K: "Lysine", L: "Leucine",
+        M: "Methionine", N: "Asparagine", P: "Proline", Q: "Glutamine", R: "Arginine",
+        S: "Serine", T: "Threonine", V: "Valine", W: "Tryptophan", Y: "Tyrosine"
+      };
+      const membraneSequence = referenceSequence.slice(0, 221);
+      const envelopeSequence = referenceSequence.slice(68, 167);
+      const proteinCandidates = [
+        {
+          id: "spike",
+          name: "Spike glycoprotein (S)",
+          subtitle: "class I fusion surface antigen",
+          signal: "Yes",
+          tm: "1",
+          rank: 1,
+          sequence: referenceSequence,
+          surfacePriority: "0.86",
+          topology: "extracellular ectodomain, transmembrane helix, cytoplasmic tail",
+          epitopes: [62, 134, 211],
+          glycans: [29, 51, 76, 118, 147, 188, 224, 247],
+          mutations: [126, 138, 151, 162, 206],
+          domains: [
+            { id: "sp-signal", name: "Signal peptide", short: "Signal peptide", start: 1, end: 13, kind: "rose", role: "Co-translational ER-targeting leader that routes the nascent surface glycoprotein into the secretory pathway." },
+            { id: "sp-ntd", name: "N-terminal domain (NTD)", short: "N-terminal domain (NTD)", start: 14, end: 92, kind: "blue", role: "Surface-exposed ectodomain region that can carry antigenic loops and glycan shielding sites." },
+            { id: "sp-rbd", name: "Receptor-binding domain (RBD)", short: "Receptor-binding domain", start: 93, end: 169, kind: "teal", role: "Primary receptor-engagement surface and high-priority region for neutralizing epitope review." },
+            { id: "sp-cleavage", name: "S1/S2 cleavage loop", short: "S1/S2 loop", start: 170, end: 176, kind: "amber", role: "Protease-sensitive linker separating receptor-binding and fusion-machine regions." },
+            { id: "sp-fusion", name: "Fusion peptide", short: "Fusion peptide", start: 177, end: 201, kind: "rose", role: "Membrane-insertion element exposed during fusion triggering." },
+            { id: "sp-hr1", name: "Heptad repeat 1 (HR1)", short: "HR1", start: 202, end: 235, kind: "violet", role: "Coiled-coil fusion-core scaffold that helps drive membrane apposition." },
+            { id: "sp-tm", name: "Transmembrane helix (TM)", short: "TM helix", start: 236, end: 260, kind: "gray", role: "Hydrophobic membrane anchor defining the ectodomain-to-cytoplasmic boundary." },
+            { id: "sp-tail", name: "Cytoplasmic tail", short: "Cytoplasmic tail", start: 261, end: 283, kind: "green", role: "Internal tail involved in trafficking, assembly context, and membrane-proximal regulation." }
+          ]
+        },
+        {
+          id: "membrane",
+          name: "Membrane glycoprotein (M)",
+          subtitle: "multi-pass membrane organizer",
+          signal: "Yes",
+          tm: "3",
+          rank: 2,
+          sequence: membraneSequence,
+          surfacePriority: "0.71",
+          topology: "short luminal ectodomain, three transmembrane helices, cytoplasmic endodomain",
+          epitopes: [18, 68, 123],
+          glycans: [11, 42, 88, 164],
+          mutations: [57, 94, 136],
+          domains: [
+            { id: "m-ecto", name: "Luminal N-terminal ectodomain", short: "Luminal ectodomain", start: 1, end: 24, kind: "blue", role: "Short exposed N-terminal segment available to the luminal/extracellular side." },
+            { id: "m-tm1", name: "Transmembrane helix 1 (TM1)", short: "TM1", start: 25, end: 55, kind: "gray", role: "First membrane-spanning helix that establishes topology and membrane insertion." },
+            { id: "m-loop", name: "Interhelical luminal loop", short: "Luminal loop", start: 56, end: 76, kind: "teal", role: "Short loop between membrane helices with limited exposed surface." },
+            { id: "m-tm2", name: "Transmembrane helix 2 (TM2)", short: "TM2", start: 77, end: 107, kind: "gray", role: "Second membrane-spanning helix contributing to compact membrane packing." },
+            { id: "m-cyto-loop", name: "Cytosolic loop", short: "Cytosolic loop", start: 108, end: 141, kind: "green", role: "Internal loop that can mediate assembly contacts on the cytoplasmic side." },
+            { id: "m-tm3", name: "Transmembrane helix 3 (TM3)", short: "TM3", start: 142, end: 174, kind: "gray", role: "Third membrane-spanning helix stabilizing the multi-pass membrane topology." },
+            { id: "m-endo", name: "Cytoplasmic endodomain", short: "Cytoplasmic endodomain", start: 175, end: 221, kind: "violet", role: "Internal C-terminal region associated with assembly and scaffold interactions." }
+          ]
+        },
+        {
+          id: "envelope",
+          name: "Envelope protein (E)",
+          subtitle: "small membrane protein",
+          signal: "No",
+          tm: "1",
+          rank: 3,
+          sequence: envelopeSequence,
+          surfacePriority: "0.58",
+          topology: "N-terminal ectodomain, signal-anchor helix, cytoplasmic tail",
+          epitopes: [12, 43],
+          glycans: [18, 69],
+          mutations: [36, 51, 78],
+          domains: [
+            { id: "e-ntd", name: "N-terminal ectodomain", short: "N-terminal ectodomain", start: 1, end: 18, kind: "blue", role: "Short exposed N-terminal segment before membrane insertion." },
+            { id: "e-tm", name: "Signal-anchor transmembrane helix", short: "Signal-anchor TM", start: 19, end: 47, kind: "gray", role: "Hydrophobic signal-anchor region that spans the membrane." },
+            { id: "e-amphi", name: "Amphipathic helix", short: "Amphipathic helix", start: 48, end: 72, kind: "teal", role: "Membrane-proximal helix that can shape oligomerization and channel-like behavior." },
+            { id: "e-tail", name: "Cytoplasmic tail", short: "Cytoplasmic tail", start: 73, end: 99, kind: "green", role: "Internal tail positioned for assembly-context interactions." }
+          ]
+        }
+      ];
 
       const els = {
+        steps: document.querySelectorAll(".step"),
+        screens: document.querySelectorAll(".screen"),
+        rawSequence: document.getElementById("rawSequenceInput"),
+        fileInput: document.getElementById("sequenceFileInput"),
+        fileName: document.getElementById("fileName"),
+        attachmentTray: document.getElementById("attachmentTray"),
+        attachmentName: document.getElementById("attachmentName"),
+        attachmentMeta: document.getElementById("attachmentMeta"),
+        clearAttachmentButton: document.getElementById("clearAttachmentButton"),
+        detectedType: document.getElementById("detectedType"),
+        inputLimitState: document.getElementById("inputLimitState"),
+        inputKind: document.getElementById("inputKind"),
+        dnaMetric: document.getElementById("dnaMetric"),
+        proteinMetric: document.getElementById("proteinMetric"),
+        frameMetric: document.getElementById("frameMetric"),
+        useIntakeButton: document.getElementById("useIntakeButton"),
+        loadDemoVirusButton: document.getElementById("loadDemoVirusButton"),
+        surfaceEsmSource: document.getElementById("surfaceEsmSource"),
+        surfaceEsmFoldButton: document.getElementById("surfaceEsmFoldButton"),
+        surfaceEsmCenterButton: document.getElementById("surfaceEsmCenterButton"),
+        surfaceEsmViewer: document.getElementById("surfaceEsmViewer"),
+        surfaceEsmFallbackCanvas: document.getElementById("surfaceEsmFallbackCanvas"),
+        surfaceEsmLoading: document.getElementById("surfaceEsmLoading"),
+        surfaceEsmDnaMetric: document.getElementById("surfaceEsmDnaMetric"),
+        surfaceEsmResidueMetric: document.getElementById("surfaceEsmResidueMetric"),
+        surfaceEsmAtomMetric: document.getElementById("surfaceEsmAtomMetric"),
+        surfaceEsmConfidenceMetric: document.getElementById("surfaceEsmConfidenceMetric"),
+        surfaceProteinLabel: document.getElementById("surfaceProteinLabel"),
+        surfaceTrackTitle: document.getElementById("surfaceTrackTitle"),
+        surfaceTrackLength: document.getElementById("surfaceTrackLength"),
+        surfaceTopologyLabel: document.getElementById("surfaceTopologyLabel"),
+        surfaceRail: document.getElementById("surfaceRail"),
+        annotationLanes: document.getElementById("annotationLanes"),
+        partLegend: document.getElementById("partLegend"),
+        domainName: document.getElementById("domainName"),
+        domainRange: document.getElementById("domainRange"),
+        domainDescription: document.getElementById("domainDescription"),
+        domainNucleotideSequence: document.getElementById("domainNucleotideSequence"),
+        sequenceStrip: document.getElementById("sequenceStrip"),
+        surfacePriorityMetric: document.getElementById("surfacePriorityMetric"),
+        domainMetric: document.getElementById("domainMetric"),
+        epitopeMetric: document.getElementById("epitopeMetric"),
+        mutationMetric: document.getElementById("mutationMetric"),
+        proteinRankingRows: document.getElementById("proteinRankingRows"),
+        openSelectedProteinButton: document.getElementById("openSelectedProteinButton"),
+        targetProteinTitle: document.getElementById("targetProteinTitle"),
+        scanPanel: document.getElementById("scanPanel"),
+        scanTitle: document.getElementById("scanTitle"),
+        scanStatus: document.getElementById("scanStatus"),
+        swarmNodes: document.getElementById("swarmNodes"),
+        swarmNodesValue: document.getElementById("swarmNodesValue"),
+        slicePool: document.getElementById("slicePool"),
+        slicePoolValue: document.getElementById("slicePoolValue"),
+        scanMode: document.getElementById("scanMode"),
+        scanSequenceText: document.getElementById("scanSequenceText"),
+        activeBoundary: document.getElementById("activeBoundary"),
+        activeScanTarget: document.getElementById("activeScanTarget"),
+        activeScanRating: document.getElementById("activeScanRating"),
+        scanLog: document.getElementById("scanLog"),
+        sliceCards: document.getElementById("sliceCards"),
+        runParallelScanButton: document.getElementById("runParallelScanButton"),
+        structureSequence: document.getElementById("structureSequenceInput"),
+        structureSequenceCount: document.getElementById("structureSequenceCount"),
+        structureLimitState: document.getElementById("structureLimitState"),
+        surfaceTargetMeta: document.getElementById("surfaceTargetMeta"),
+        candidateWindowMetric: document.getElementById("candidateWindowMetric"),
+        aminoChainList: document.getElementById("aminoChainList"),
+        constructAminoTotal: document.getElementById("constructAminoTotal"),
         viewer: document.getElementById("viewer"),
         fallbackCanvas: document.getElementById("fallbackCanvas"),
         loading: document.getElementById("viewerLoading"),
-        sequence: document.getElementById("sequenceInput"),
-        sequenceCount: document.getElementById("sequenceCount"),
-        limitState: document.getElementById("limitState"),
         foldButton: document.getElementById("foldButton"),
-        demoButton: document.getElementById("demoButton"),
         cartoonButton: document.getElementById("cartoonButton"),
         surfaceButton: document.getElementById("surfaceButton"),
         spinButton: document.getElementById("spinButton"),
@@ -828,44 +2863,977 @@
       let currentStyle = "cartoon";
       let spinning = false;
       let fallbackActive = false;
+      let surfaceEsmViewer;
+      let surfaceEsmPdb = "";
+      let surfaceEsmSequence = "";
+      let surfaceEsmAttemptedSequence = "";
+      let surfaceEsmFolding = false;
+      let surfaceEsmFallbackActive = false;
+      let activeView = "input";
+      let intakeProtein = "";
+      let intakeMode = "empty";
+      let intakeDnaLength = 0;
+      let intakeCodonTriplets = [];
+      let sequenceLabel = "Submitted protein";
+      let attachedFileText = "";
+      let selectedProteinId = "spike";
+      let selectedDomainId = "sp-ntd";
+      let selectedTripletIndex = 0;
+      let scanTimer;
+      let scanEvents = [];
+      let recursionResults = [];
 
-      function cleanSequence(value) {
+      function cleanProtein(value) {
         return value.toUpperCase().replace(/[^ACDEFGHIKLMNPQRSTVWY]/g, "");
       }
 
-      function updateSequenceState() {
-        const sequence = cleanSequence(els.sequence.value);
-        els.sequenceCount.textContent = `${sequence.length} aa`;
-        els.limitState.textContent = sequence.length <= 400 ? "Under 400" : "Over 400";
-        els.limitState.style.color = sequence.length <= 400 ? "var(--green)" : "var(--rose)";
+      function stripFasta(value) {
+        return value
+          .split(/\r?\n/)
+          .filter(line => !line.trim().startsWith(">"))
+          .join("")
+          .toUpperCase()
+          .replace(/[^A-Z]/g, "");
       }
 
-      function parsePdbStats(pdb) {
-        const residues = new Set();
-        const bFactors = [];
-        let atoms = 0;
+      function detectInputKind(sequence) {
+        if (!sequence) return "empty";
+        const dnaCount = sequence.replace(/[^ACGTUN]/g, "").length;
+        const dnaRatio = dnaCount / sequence.length;
+        return dnaRatio > 0.9 ? "dna" : "protein";
+      }
 
-        for (const line of pdb.split(/\r?\n/)) {
-          if (!line.startsWith("ATOM")) continue;
-          atoms += 1;
-          residues.add(`${line.slice(21, 22)}:${line.slice(22, 26).trim()}:${line.slice(17, 20).trim()}`);
-          const b = Number.parseFloat(line.slice(60, 66));
-          if (Number.isFinite(b)) bFactors.push(b);
+      function reverseComplement(dna) {
+        const map = { A: "T", T: "A", G: "C", C: "G", U: "A", N: "N" };
+        return dna.split("").reverse().map(base => map[base] || "N").join("");
+      }
+
+      function translateFrameTriplets(dna, offset) {
+        const aminoAcids = [];
+        const codons = [];
+        for (let i = offset; i + 2 < dna.length; i += 3) {
+          const codon = dna.slice(i, i + 3);
+          codons.push(codon);
+          aminoAcids.push(codonTable[codon] || "X");
+        }
+        return { translated: aminoAcids.join(""), codons };
+      }
+
+      function bestProteinFromDNA(value) {
+        const dna = value.replace(/U/g, "T").replace(/[^ACGTN]/g, "");
+        const candidates = [];
+        const strands = [
+          { label: "forward frame", sequence: dna },
+          { label: "reverse frame", sequence: reverseComplement(dna) }
+        ];
+        for (const strand of strands) {
+          for (let frame = 0; frame < 3; frame += 1) {
+            const { translated, codons } = translateFrameTriplets(strand.sequence, frame);
+            let segmentStart = 0;
+            for (let segmentEnd = 0; segmentEnd <= translated.length; segmentEnd += 1) {
+              if (segmentEnd < translated.length && translated[segmentEnd] !== "*") continue;
+              const segment = translated.slice(segmentStart, segmentEnd);
+              const start = segment.indexOf("M");
+              const peptideStart = start >= 0 ? segmentStart + start : segmentStart;
+              const mapped = [];
+              for (let i = peptideStart; i < segmentEnd; i += 1) {
+                const aminoAcid = translated[i];
+                if (codonBackbone[aminoAcid]) mapped.push({ aminoAcid, codon: codons[i] });
+              }
+              const peptide = mapped.map(item => item.aminoAcid).join("");
+              if (peptide.length) {
+                candidates.push({
+                  protein: peptide,
+                  label: `${strand.label} ${frame + 1}`,
+                  codons: mapped.map(item => item.codon)
+                });
+              }
+              segmentStart = segmentEnd + 1;
+            }
+          }
+        }
+        candidates.sort((a, b) => b.protein.length - a.protein.length);
+        return candidates[0] || { protein: "", label: "No readable frame", codons: [] };
+      }
+
+      const hydropathyScale = {
+        A: 1.8, C: 2.5, D: -3.5, E: -3.5, F: 2.8, G: -0.4, H: -3.2, I: 4.5,
+        K: -3.9, L: 3.8, M: 1.9, N: -3.5, P: -1.6, Q: -3.5, R: -4.5, S: -0.8,
+        T: -0.7, V: 4.2, W: -0.9, Y: -1.3
+      };
+      const ESM_SEQUENCE_LIMIT = 400;
+      const RECURSION_RESULT_LIMIT = 390;
+      const aminoAcidResidueNames = {
+        A: "ALA", C: "CYS", D: "ASP", E: "GLU", F: "PHE", G: "GLY", H: "HIS", I: "ILE",
+        K: "LYS", L: "LEU", M: "MET", N: "ASN", P: "PRO", Q: "GLN", R: "ARG", S: "SER",
+        T: "THR", V: "VAL", W: "TRP", Y: "TYR"
+      };
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      function hydropathyValues(sequence) {
+        const radius = Math.max(2, Math.min(9, Math.floor(sequence.length / 36)));
+        return sequence.split("").map((_, index) => {
+          let sum = 0;
+          let count = 0;
+          const start = Math.max(0, index - radius);
+          const end = Math.min(sequence.length - 1, index + radius);
+          for (let i = start; i <= end; i += 1) {
+            sum += hydropathyScale[sequence[i]] ?? 0;
+            count += 1;
+          }
+          return count ? sum / count : 0;
+        });
+      }
+
+      function predictedExposureMarkers(sequence, maxMarkers = 4) {
+        if (sequence.length < 9) return [];
+        const values = hydropathyValues(sequence);
+        const spacing = Math.max(10, Math.floor(sequence.length / 8));
+        const ranked = values
+          .map((value, index) => ({ residue: index + 1, score: -value }))
+          .sort((a, b) => b.score - a.score);
+        const markers = [];
+        for (const item of ranked) {
+          if (markers.every(residue => Math.abs(residue - item.residue) >= spacing)) markers.push(item.residue);
+          if (markers.length >= maxMarkers) break;
+        }
+        return markers.sort((a, b) => a - b);
+      }
+
+      function scoreRecursionWindow(sequence) {
+        const values = hydropathyValues(sequence);
+        if (!values.length) return 0;
+        const hydrophilicRatio = values.filter(value => value < 0).length / values.length;
+        const meanHydropathy = values.reduce((sum, value) => sum + value, 0) / values.length;
+        const chargedRatio = sequence.replace(/[^DEKRH]/g, "").length / sequence.length;
+        const aromaticPenalty = sequence.replace(/[^FWY]/g, "").length / sequence.length;
+        return clamp(0.48 + hydrophilicRatio * 0.28 + chargedRatio * 0.18 - Math.max(0, meanHydropathy) * 0.035 - aromaticPenalty * 0.08, 0.31, 0.97);
+      }
+
+      function recursionCandidateStarts(sequence, windowLength) {
+        if (!sequence.length) return [];
+        const maxStart = Math.max(1, sequence.length - windowLength + 1);
+        const markers = predictedExposureMarkers(sequence, 8);
+        const starts = new Set([1, maxStart]);
+
+        markers.forEach(marker => {
+          starts.add(clamp(Math.round(marker - windowLength / 2), 1, maxStart));
+        });
+
+        [0.2, 0.4, 0.6, 0.8].forEach(fraction => {
+          starts.add(clamp(Math.round(sequence.length * fraction - windowLength / 2), 1, maxStart));
+        });
+
+        return [...starts].sort((a, b) => a - b);
+      }
+
+      function buildRecursionResults() {
+        const sequence = intakeProtein;
+        if (!sequence.length) return [];
+
+        const windowLength = Math.min(sequence.length, RECURSION_RESULT_LIMIT);
+        const candidates = recursionCandidateStarts(sequence, windowLength).map((start, index) => {
+          const end = start + windowLength - 1;
+          const windowSequence = sequence.slice(start - 1, end);
+          const score = scoreRecursionWindow(windowSequence);
+          const epitopes = predictedExposureMarkers(windowSequence, 4);
+          return {
+            id: `recursed-${start}-${end}-${index}`,
+            name: `Recursed result ${index + 1}`,
+            subtitle: `Residues ${start}-${end} from ${sequenceLabel}`,
+            signal: "ESM-ready",
+            tm: `${windowSequence.length} aa`,
+            rank: index + 1,
+            score,
+            scoreLabel: score.toFixed(2),
+            sequence: windowSequence,
+            sourceStart: start,
+            sourceEnd: end,
+            sourceLength: sequence.length,
+            surfacePriority: score.toFixed(2),
+            topology: `Recursed ${windowSequence.length} aa targetability window from residues ${start}-${end}`,
+            epitopes,
+            glycans: [],
+            mutations: [],
+            domains: [
+              {
+                id: `recursed-${start}-${end}-window`,
+                name: `Recursed window ${start}-${end}`,
+                short: "ESM-ready window",
+                start: 1,
+                end: windowSequence.length,
+                kind: "blue",
+                role: `Ranked recursion result capped at ${windowSequence.length} amino acids for direct ESM Atlas folding.`
+              }
+            ]
+          };
+        });
+
+        candidates.sort((a, b) => b.score - a.score || a.sourceStart - b.sourceStart);
+        return candidates.slice(0, Math.min(8, candidates.length)).map((candidate, index) => ({
+          ...candidate,
+          name: `Recursed result ${index + 1}`,
+          rank: index + 1,
+          id: `recursed-rank-${index + 1}-${candidate.sourceStart}-${candidate.sourceEnd}`
+        }));
+      }
+
+      function ensureRecursionResults() {
+        recursionResults = buildRecursionResults();
+        if (recursionResults.length && !recursionResults.some(candidate => candidate.id === selectedProteinId)) {
+          selectedProteinId = recursionResults[0].id;
+          selectedDomainId = recursionResults[0].domains[0]?.id || "";
+          selectedTripletIndex = 0;
+        }
+        return recursionResults;
+      }
+
+      function renderScanSequence(candidate = getProteinCandidate()) {
+        els.scanSequenceText.replaceChildren();
+        if (!candidate.sequence.length) {
+          els.scanSequenceText.textContent = "";
+          return;
         }
 
-        const meanB = bFactors.length ? bFactors.reduce((sum, value) => sum + value, 0) / bFactors.length : 0;
+        const visible = candidate.sequence.slice(0, Math.min(96, candidate.sequence.length));
+        visible.split("").forEach((aminoAcid, index) => {
+          const token = document.createElement("span");
+          token.textContent = aminoAcid;
+          if (index < 18) token.className = "active";
+          els.scanSequenceText.append(token);
+        });
+        if (candidate.sequence.length > visible.length) els.scanSequenceText.append("...");
+      }
+
+      function renderRecursionResults() {
+        const candidates = ensureRecursionResults();
+        const selected = getProteinCandidate();
+        els.sliceCards.replaceChildren();
+        els.scanLog.replaceChildren();
+
+        if (!candidates.length) {
+          els.scanStatus.textContent = `${els.swarmNodes.value} swarm nodes idle`;
+          els.activeBoundary.textContent = "--";
+          els.activeScanTarget.textContent = "--";
+          els.activeScanRating.textContent = "--";
+          renderScanSequence({ sequence: "" });
+          return;
+        }
+
+        els.scanStatus.textContent = `${els.swarmNodes.value} swarm nodes ranked ${candidates.length}`;
+        els.activeBoundary.textContent = `${selected.sourceStart}-${selected.sourceEnd}`;
+        els.activeScanTarget.textContent = `${selected.sequence.length} aa`;
+        els.activeScanRating.textContent = selected.scoreLabel;
+        renderScanSequence(selected);
+
+        const log = document.createElement("div");
+        log.className = "scan-log-row";
+        log.innerHTML = `<strong>${candidates.length}</strong> ranked recursion windows returned; every result is under ${ESM_SEQUENCE_LIMIT} aa.`;
+        els.scanLog.append(log);
+
+        candidates.slice(0, 4).forEach(candidate => {
+          const card = document.createElement("button");
+          card.type = "button";
+          card.className = `slice-card${candidate.id === selectedProteinId ? " active" : ""}`;
+          card.dataset.proteinId = candidate.id;
+          const title = document.createElement("strong");
+          title.textContent = `#${candidate.rank} ${candidate.sourceStart}-${candidate.sourceEnd} | ${candidate.sequence.length} aa`;
+          const detail = document.createElement("span");
+          detail.textContent = `Targetability ${candidate.scoreLabel}. Select to generate the step 3 visual automatically.`;
+          card.append(title, detail);
+          els.sliceCards.append(card);
+        });
+      }
+
+      function surfaceFoldTarget(candidate = getProteinCandidate()) {
+        const sequence = candidate.sequence || "";
+        if (!sequence) {
+          return { sequence: "", fullLength: 0, start: 0, end: 0, isWindow: false, key: "" };
+        }
+        if (sequence.length <= ESM_SEQUENCE_LIMIT) {
+          return {
+            sequence,
+            fullLength: sequence.length,
+            start: 1,
+            end: sequence.length,
+            isWindow: false,
+            key: `${sequence.length}:1:${sequence.length}:${sequence}`
+          };
+        }
+
+        const markers = candidate.epitopes?.length ? candidate.epitopes : predictedExposureMarkers(sequence);
+        const center = markers.length ? markers[Math.floor(markers.length / 2)] : Math.ceil(sequence.length / 2);
+        const maxStart = sequence.length - ESM_SEQUENCE_LIMIT + 1;
+        const start = clamp(Math.round(center - ESM_SEQUENCE_LIMIT / 2), 1, maxStart);
+        const end = start + ESM_SEQUENCE_LIMIT - 1;
+        const windowSequence = sequence.slice(start - 1, end);
         return {
-          atoms,
-          residues: residues.size,
-          confidence: Math.round(meanB * 100)
+          sequence: windowSequence,
+          fullLength: sequence.length,
+          start,
+          end,
+          isWindow: true,
+          key: `${sequence.length}:${start}:${end}:${windowSequence}`
         };
       }
 
-      function setStats(pdb) {
-        const stats = parsePdbStats(pdb);
-        els.residues.textContent = stats.residues.toLocaleString();
-        els.atoms.textContent = stats.atoms.toLocaleString();
-        els.confidence.textContent = stats.confidence.toString();
+      function submittedCandidate() {
+        const sequence = intakeProtein;
+        const epitopes = predictedExposureMarkers(sequence);
+        return {
+          id: "submitted",
+          name: sequence ? sequenceLabel : "Awaiting sequence",
+          subtitle: "paste/upload input",
+          signal: "Review",
+          tm: "Review",
+          rank: 1,
+          sequence,
+          surfacePriority: sequence ? "Review" : "--",
+          topology: sequence ? "Submitted sequence from paste/upload" : "Awaiting real sequence input",
+          epitopes,
+          glycans: [],
+          mutations: [],
+          domains: sequence
+            ? [{ id: "submitted-sequence", name: "Submitted protein sequence", short: "Input sequence", start: 1, end: sequence.length, kind: "blue", role: "Paste/upload sequence mapped into 5' to 3' mRNA codon triplets." }]
+            : []
+        };
+      }
+
+      function getProteinCandidate(id = selectedProteinId) {
+        return submittedCandidate();
+      }
+
+      function getSelectedDomain(candidate = getProteinCandidate()) {
+        return candidate.domains.find(domain => domain.id === selectedDomainId) || candidate.domains[0];
+      }
+
+      function residuePercent(residue, length) {
+        return Math.max(0, Math.min(100, ((residue - 0.5) / length) * 100));
+      }
+
+      function domainLeft(domain, length) {
+        return ((domain.start - 1) / length) * 100;
+      }
+
+      function domainWidth(domain, length) {
+        return ((domain.end - domain.start + 1) / length) * 100;
+      }
+
+      function proteinToCodons(protein) {
+        return protein.split("").map(aminoAcid => codonBackbone[aminoAcid] || "NNN");
+      }
+
+      function proteinToCodingSequence(protein) {
+        return proteinToCodons(protein).join("");
+      }
+
+      function codingCodonsForSequence(sequence) {
+        if (sequence === intakeProtein && intakeCodonTriplets.length === sequence.length) return intakeCodonTriplets;
+        return proteinToCodons(sequence);
+      }
+
+      function codingCodonsForDomain(candidate, domain) {
+        return codingCodonsForSequence(candidate.sequence).slice(domain.start - 1, domain.end);
+      }
+
+      function codonToRna(codon) {
+        return codon.replace(/T/g, "U");
+      }
+
+      function wrapCodonTriplets(codons, columns = 10) {
+        const rows = [];
+        for (let i = 0; i < codons.length; i += columns) {
+          rows.push(codons.slice(i, i + columns).map(codonToRna).join(" "));
+        }
+        return rows.join("\n");
+      }
+
+      function tripletSourceLabel() {
+        if (intakeMode === "dna" && intakeCodonTriplets.length === intakeProtein.length) return "translated frame";
+        if (intakeMode === "protein" && intakeProtein) return "protein codon map";
+        return "codon map";
+      }
+
+      function wrapSequence(sequence, columns = 60) {
+        return sequence.match(new RegExp(`.{1,${columns}}`, "g"))?.join("\n") || "";
+      }
+
+      function codingSequenceForDomain(candidate, domain) {
+        return codingCodonsForDomain(candidate, domain).join("");
+      }
+
+      function residueChain(sequence, start, end) {
+        const safeStart = Math.max(1, start);
+        const safeEnd = Math.min(sequence.length, end);
+        return safeEnd >= safeStart ? sequence.slice(safeStart - 1, safeEnd) : "";
+      }
+
+      function constructAminoChains() {
+        const sequence = intakeProtein;
+        if (!sequence) return [];
+        return [
+          { name: "Signal peptide", detail: "Residues 1-21", kind: "signal", sequence: residueChain(sequence, 1, 21) },
+          { name: "Epitope 12-33", detail: "Residues 12-33", kind: "epitope", sequence: residueChain(sequence, 12, 33) },
+          { name: "Linker", detail: "Synthetic spacer", kind: "linker", sequence: "GSG" },
+          { name: "Epitope 88-112", detail: "Residues 88-112", kind: "epitope", sequence: residueChain(sequence, 88, 112) },
+          { name: "Linker", detail: "Synthetic spacer", kind: "linker", sequence: "GSG" },
+          { name: "Epitope 226-251", detail: "Residues 226-251", kind: "epitope", sequence: residueChain(sequence, 226, 251) }
+        ];
+      }
+
+      function appendAminoTokens(container, chain) {
+        for (const residue of chain.sequence) {
+          const token = document.createElement("span");
+          token.className = `amino-token ${chain.kind}`;
+          token.textContent = residue;
+          container.append(token);
+        }
+      }
+
+      function renderAminoChains() {
+        const chains = constructAminoChains();
+        const total = chains.reduce((sum, chain) => sum + chain.sequence.length, 0);
+        els.constructAminoTotal.textContent = `${total} aa coding cassette`;
+        els.aminoChainList.replaceChildren();
+
+        chains.forEach(chain => {
+          const row = document.createElement("div");
+          row.className = "amino-chain-row";
+
+          const meta = document.createElement("div");
+          meta.className = "amino-chain-meta";
+          const name = document.createElement("strong");
+          name.textContent = chain.name;
+          const detail = document.createElement("span");
+          detail.textContent = `${chain.detail} - ${chain.sequence.length} aa`;
+          meta.append(name, detail);
+
+          const sequence = document.createElement("div");
+          sequence.className = "amino-chain-sequence";
+          appendAminoTokens(sequence, chain);
+
+          row.append(meta, sequence);
+          els.aminoChainList.append(row);
+        });
+      }
+
+      function renderSurfaceRail(candidate) {
+        const svg = els.surfaceRail;
+        const ns = "http://www.w3.org/2000/svg";
+        const node = (tag, attrs = {}, text = "") => {
+          const element = document.createElementNS(ns, tag);
+          Object.entries(attrs).forEach(([key, value]) => element.setAttribute(key, value));
+          if (text) element.textContent = text;
+          return element;
+        };
+        svg.replaceChildren(
+          node("title", { id: "topologyChartTitle" }, "Residue hydropathy profile"),
+          node("desc", { id: "topologyChartDesc" }, "Line graph of sequence hydropathy with candidate exposed residue markers.")
+        );
+
+        const width = 920;
+        const height = 280;
+        const margin = { top: 24, right: 28, bottom: 48, left: 74 };
+        const plotWidth = width - margin.left - margin.right;
+        const plotHeight = height - margin.top - margin.bottom;
+        const x = residue => margin.left + ((residue - 1) / Math.max(1, candidate.sequence.length - 1)) * plotWidth;
+        const y = value => margin.top + ((4.5 - value) / 9) * plotHeight;
+
+        [-4, -2, 0, 2, 4].forEach(value => {
+          const lineClass = value === 0 ? "chart-zero" : "chart-grid";
+          svg.append(node("line", { class: lineClass, x1: margin.left, y1: y(value), x2: width - margin.right, y2: y(value) }));
+          svg.append(node("text", { class: "chart-tick", x: margin.left - 12, y: y(value) + 3, "text-anchor": "end" }, value.toString()));
+        });
+
+        svg.append(node("line", { class: "chart-axis", x1: margin.left, y1: margin.top, x2: margin.left, y2: height - margin.bottom }));
+        svg.append(node("line", { class: "chart-axis", x1: margin.left, y1: height - margin.bottom, x2: width - margin.right, y2: height - margin.bottom }));
+        svg.append(node("text", { class: "chart-label", x: width / 2, y: height - 12, "text-anchor": "middle" }, "Residue position"));
+        svg.append(node("text", { class: "chart-label", x: 18, y: height / 2, transform: `rotate(-90 18 ${height / 2})`, "text-anchor": "middle" }, "Kyte-Doolittle hydropathy"));
+
+        if (!candidate.sequence.length) {
+          svg.append(node("text", { class: "chart-label", x: width / 2, y: height / 2, "text-anchor": "middle" }, "Awaiting sequence"));
+          return;
+        }
+
+        const xTicks = Array.from(new Set([1, Math.round(candidate.sequence.length * 0.25), Math.round(candidate.sequence.length * 0.5), Math.round(candidate.sequence.length * 0.75), candidate.sequence.length]));
+        xTicks.forEach(residue => {
+          svg.append(node("line", { class: "chart-grid", x1: x(residue), y1: margin.top, x2: x(residue), y2: height - margin.bottom }));
+          svg.append(node("text", { class: "chart-tick", x: x(residue), y: height - margin.bottom + 17, "text-anchor": "middle" }, residue.toString()));
+        });
+
+        candidate.domains.forEach(domain => {
+          const rect = node("rect", {
+            class: "chart-region",
+            x: x(domain.start),
+            y: margin.top,
+            width: Math.max(2, x(domain.end) - x(domain.start)),
+            height: plotHeight,
+            "data-domain-id": domain.id
+          });
+          svg.append(rect);
+          svg.append(node("text", { class: "chart-tick", x: x(domain.start) + 7, y: margin.top + 14 }, domain.short));
+        });
+
+        const values = hydropathyValues(candidate.sequence);
+        const path = values.map((value, index) => `${index === 0 ? "M" : "L"} ${x(index + 1).toFixed(2)} ${y(value).toFixed(2)}`).join(" ");
+        svg.append(node("path", { class: "chart-line", d: path }));
+
+        candidate.epitopes.forEach((residue, index) => {
+          svg.append(node("line", { class: "chart-marker", x1: x(residue), y1: margin.top, x2: x(residue), y2: height - margin.bottom }));
+          svg.append(node("text", { class: "chart-tick", x: x(residue) + 5, y: margin.top + 28 }, `E${index + 1} ${residue}`));
+        });
+
+        svg.append(node("line", { class: "chart-legend-swatch", x1: width - 220, y1: 20, x2: width - 180, y2: 20, stroke: "#2f67d8" }));
+        svg.append(node("text", { class: "chart-tick", x: width - 172, y: 23 }, "Windowed hydropathy"));
+        svg.append(node("line", { class: "chart-marker", x1: width - 220, y1: 38, x2: width - 180, y2: 38 }));
+        svg.append(node("text", { class: "chart-tick", x: width - 172, y: 41 }, "Exposed candidate marker"));
+      }
+
+      function renderAnnotationLanes(candidate) {
+        const lanes = [
+          { label: "Target epitopes", className: "epitope", residues: candidate.epitopes },
+          { label: "Glyco shielding", className: "glyco", residues: candidate.glycans },
+          { label: "Mutation sites", className: "mutation", residues: candidate.mutations }
+        ];
+        els.annotationLanes.innerHTML = "";
+        lanes.forEach(lane => {
+          const row = document.createElement("div");
+          row.className = "annotation-lane";
+          const label = document.createElement("strong");
+          label.textContent = lane.label;
+          const track = document.createElement("div");
+          track.className = "annotation-track";
+          lane.residues.forEach(residue => {
+            const marker = document.createElement("span");
+            marker.className = `annotation-marker ${lane.className}`;
+            marker.style.left = `${residuePercent(residue, candidate.sequence.length)}%`;
+            marker.title = `${lane.label}: residue ${residue}`;
+            track.append(marker);
+          });
+          row.append(label, track);
+          els.annotationLanes.append(row);
+        });
+      }
+
+      function renderPartLegend(candidate) {
+        els.partLegend.innerHTML = "";
+        candidate.domains.forEach(domain => {
+          const card = document.createElement("button");
+          card.type = "button";
+          card.className = `part-card${domain.id === selectedDomainId ? " active" : ""}`;
+          card.dataset.domainId = domain.id;
+          const title = document.createElement("strong");
+          title.textContent = domain.name;
+          const copy = document.createElement("span");
+          copy.textContent = `Residues ${domain.start}-${domain.end} | ${domain.end - domain.start + 1} triplets`;
+          card.append(title, copy);
+          els.partLegend.append(card);
+        });
+      }
+
+      function domainForResidue(candidate, residue) {
+        return candidate.domains.find(domain => residue >= domain.start && residue <= domain.end);
+      }
+
+      function clampedTripletIndex(candidate, index) {
+        return Math.max(0, Math.min(Math.max(0, candidate.sequence.length - 1), index));
+      }
+
+      function renderSequenceStrip(candidate) {
+        const root = els.sequenceStrip;
+        root.replaceChildren();
+        if (!candidate.sequence.length) return;
+
+        selectedTripletIndex = clampedTripletIndex(candidate, selectedTripletIndex);
+        const domain = getSelectedDomain(candidate);
+        const codons = codingCodonsForSequence(candidate.sequence);
+        const selectedResidue = selectedTripletIndex + 1;
+        const selectedAminoAcid = candidate.sequence[selectedTripletIndex] || "";
+        const selectedCodon = codonToRna(codons[selectedTripletIndex] || "NNN");
+        const selectedDomain = domainForResidue(candidate, selectedResidue) || domain;
+        const nucleotideStart = selectedTripletIndex * 3 + 1;
+        const nucleotideEnd = nucleotideStart + 2;
+        const padLength = Math.max(3, candidate.sequence.length.toString().length);
+        const sourceLabel = tripletSourceLabel();
+        const hydropathy = hydropathyScale[selectedAminoAcid];
+
+        const head = document.createElement("div");
+        head.className = "triplet-map-head";
+
+        const title = document.createElement("div");
+        title.className = "triplet-map-title";
+        const titleText = document.createElement("strong");
+        titleText.textContent = "Codon triplet mapping";
+        const subtitle = document.createElement("span");
+        subtitle.textContent = `${candidate.sequence.length.toLocaleString()} residues | ${(candidate.sequence.length * 3).toLocaleString()} nt | ${sourceLabel}`;
+        title.append(titleText, subtitle);
+
+        const controls = document.createElement("div");
+        controls.className = "triplet-controls";
+        const previous = document.createElement("button");
+        previous.type = "button";
+        previous.className = "triplet-control";
+        previous.dataset.tripletStep = "-1";
+        previous.disabled = selectedTripletIndex === 0;
+        previous.textContent = "Prev";
+        const next = document.createElement("button");
+        next.type = "button";
+        next.className = "triplet-control";
+        next.dataset.tripletStep = "1";
+        next.disabled = selectedTripletIndex >= candidate.sequence.length - 1;
+        next.textContent = "Next";
+        controls.append(previous, next);
+        head.append(title, controls);
+
+        const inspector = document.createElement("div");
+        inspector.className = "triplet-inspector";
+        const badge = document.createElement("div");
+        badge.className = "triplet-residue-badge";
+        badge.textContent = selectedAminoAcid;
+
+        const inspectorCopy = document.createElement("div");
+        inspectorCopy.className = "triplet-inspector-copy";
+        const inspectorTitle = document.createElement("strong");
+        inspectorTitle.textContent = `${aminoAcidNames[selectedAminoAcid] || "Residue"} ${selectedResidue.toLocaleString()} maps to ${selectedCodon}`;
+        const stats = document.createElement("div");
+        stats.className = "triplet-stat-row";
+        [
+          { label: "Residue", value: selectedResidue.toLocaleString() },
+          { label: "Triplet", value: selectedCodon },
+          { label: "Coding bases", value: `${nucleotideStart}-${nucleotideEnd}` },
+          { label: "Hydropathy", value: Number.isFinite(hydropathy) ? hydropathy.toFixed(1) : "--" }
+        ].forEach(item => {
+          const stat = document.createElement("div");
+          stat.className = "triplet-stat";
+          const label = document.createElement("span");
+          label.textContent = item.label;
+          const value = document.createElement("strong");
+          value.textContent = item.value;
+          stat.append(label, value);
+          stats.append(stat);
+        });
+        const domainStat = document.createElement("div");
+        domainStat.className = "triplet-stat";
+        const domainLabel = document.createElement("span");
+        domainLabel.textContent = "Region";
+        const domainValue = document.createElement("strong");
+        domainValue.textContent = selectedDomain?.short || "Sequence";
+        domainStat.append(domainLabel, domainValue);
+        stats.append(domainStat);
+        inspectorCopy.append(inspectorTitle, stats);
+        inspector.append(badge, inspectorCopy);
+
+        const grid = document.createElement("div");
+        grid.className = "triplet-codon-grid";
+        grid.setAttribute("role", "listbox");
+        grid.setAttribute("aria-label", "Residue codon triplets");
+        grid.setAttribute("aria-activedescendant", `triplet-codon-${selectedTripletIndex}`);
+
+        codons.forEach((codon, index) => {
+          const residue = index + 1;
+          const aminoAcid = candidate.sequence[index];
+          const inDomain = residue >= domain.start && residue <= domain.end;
+          const active = index === selectedTripletIndex;
+          const tile = document.createElement("button");
+          tile.type = "button";
+          tile.id = `triplet-codon-${index}`;
+          tile.className = `triplet-codon${active ? " active" : ""}${inDomain ? " in-domain" : ""}`;
+          tile.dataset.tripletIndex = index.toString();
+          tile.tabIndex = active ? 0 : -1;
+          tile.setAttribute("role", "option");
+          tile.setAttribute("aria-selected", active ? "true" : "false");
+          tile.setAttribute("aria-label", `Residue ${residue} ${aminoAcid}, codon ${codonToRna(codon)}`);
+
+          const indexLabel = document.createElement("span");
+          indexLabel.className = "triplet-codon-index";
+          indexLabel.textContent = residue.toString().padStart(padLength, "0");
+          const amino = document.createElement("strong");
+          amino.textContent = aminoAcid;
+          const mappedCodon = document.createElement("code");
+          mappedCodon.textContent = codonToRna(codon);
+          tile.append(indexLabel, amino, mappedCodon);
+          grid.append(tile);
+        });
+
+        root.append(head, inspector, grid);
+      }
+
+      function updateDomainDetail(candidate) {
+        const domain = getSelectedDomain(candidate);
+        const codons = codingCodonsForDomain(candidate, domain);
+        const nucleotides = codons.join("");
+        els.domainName.textContent = domain.name;
+        els.domainRange.textContent = `Residues ${domain.start}-${domain.end} | ${nucleotides.length} nt | ${codons.length} triplets`;
+        els.domainDescription.textContent = domain.role;
+        els.domainNucleotideSequence.textContent = wrapCodonTriplets(codons);
+      }
+
+      function renderProteinRanking() {
+        els.proteinRankingRows.innerHTML = "";
+        const candidates = intakeProtein ? [submittedCandidate()] : [];
+        if (!candidates.length) {
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = 4;
+          cell.textContent = "Awaiting sequence";
+          row.append(cell);
+          els.proteinRankingRows.append(row);
+          return;
+        }
+
+        candidates.forEach(candidate => {
+          const row = document.createElement("tr");
+          row.className = `rank-row${candidate.id === selectedProteinId ? " selected" : ""}`;
+          row.dataset.proteinId = candidate.id;
+          row.tabIndex = 0;
+          row.setAttribute("role", "button");
+          row.setAttribute("aria-label", `Open ${candidate.name} in the structure model step`);
+
+          const protein = document.createElement("td");
+          const name = document.createElement("div");
+          name.className = "rank-name";
+          const strong = document.createElement("strong");
+          strong.textContent = candidate.name;
+          const subtitle = document.createElement("span");
+          subtitle.textContent = candidate.subtitle;
+          name.append(strong, subtitle);
+          protein.append(name);
+
+          const signal = document.createElement("td");
+          signal.textContent = candidate.signal;
+          const tm = document.createElement("td");
+          tm.textContent = candidate.tm;
+          const rank = document.createElement("td");
+          const score = document.createElement("span");
+          score.className = "score";
+          if (candidate.rank > 2) score.dataset.tone = "amber";
+          score.textContent = candidate.rank.toString();
+          rank.append(score);
+
+          row.append(protein, signal, tm, rank);
+          els.proteinRankingRows.append(row);
+        });
+      }
+
+      function updateSurfaceUI() {
+        const candidate = getProteinCandidate();
+        if (!candidate.sequence.length) {
+          selectedDomainId = "";
+          els.surfaceProteinLabel.textContent = "Awaiting sequence";
+          els.surfaceTrackTitle.textContent = "Residue hydropathy profile and exposed candidate markers";
+          els.surfaceTrackLength.textContent = "0 aa";
+          els.surfaceTopologyLabel.textContent = "Awaiting real sequence input";
+          els.surfacePriorityMetric.textContent = "--";
+          els.domainMetric.textContent = "0";
+          els.epitopeMetric.textContent = "0";
+          els.mutationMetric.textContent = "0";
+          renderSurfaceRail(candidate);
+          renderAnnotationLanes(candidate);
+          renderPartLegend(candidate);
+          els.sequenceStrip.replaceChildren();
+          els.domainName.textContent = "Awaiting sequence";
+          els.domainRange.textContent = "0 aa";
+          els.domainDescription.textContent = "Paste or upload sequence data to inspect topology.";
+          els.domainNucleotideSequence.textContent = "";
+          renderProteinRanking();
+          syncSurfaceEsmVisual(candidate);
+          return;
+        }
+        if (!candidate.domains.some(domain => domain.id === selectedDomainId)) selectedDomainId = candidate.domains[0].id;
+        els.surfaceProteinLabel.textContent = candidate.name;
+        els.surfaceTrackTitle.textContent = "Residue hydropathy profile and exposed candidate markers";
+        els.surfaceTrackLength.textContent = `${candidate.sequence.length} aa`;
+        els.surfaceTopologyLabel.textContent = candidate.topology;
+        els.surfacePriorityMetric.textContent = candidate.surfacePriority;
+        els.domainMetric.textContent = candidate.domains.length.toString();
+        els.epitopeMetric.textContent = candidate.epitopes.length.toString();
+        els.mutationMetric.textContent = candidate.mutations.length.toString();
+        renderSurfaceRail(candidate);
+        renderAnnotationLanes(candidate);
+        renderPartLegend(candidate);
+        renderSequenceStrip(candidate);
+        updateDomainDetail(candidate);
+        renderProteinRanking();
+        syncSurfaceEsmVisual(candidate);
+      }
+
+      function selectDomain(domainId) {
+        selectedDomainId = domainId;
+        const candidate = getProteinCandidate();
+        const domain = getSelectedDomain(candidate);
+        if (domain) selectedTripletIndex = domain.start - 1;
+        updateSurfaceUI();
+      }
+
+      function selectTriplet(index, options = {}) {
+        const candidate = getProteinCandidate();
+        if (!candidate.sequence.length) return;
+
+        selectedTripletIndex = clampedTripletIndex(candidate, index);
+        const residue = selectedTripletIndex + 1;
+        const domain = domainForResidue(candidate, residue);
+        if (domain && domain.id !== selectedDomainId) {
+          selectedDomainId = domain.id;
+          updateSurfaceUI();
+        } else {
+          renderSequenceStrip(candidate);
+        }
+
+        if (options.focus) {
+          const active = els.sequenceStrip.querySelector(`[data-triplet-index="${selectedTripletIndex}"]`);
+          active?.focus({ preventScroll: true });
+          active?.scrollIntoView({ block: "nearest", inline: "nearest" });
+        }
+      }
+
+      function showStructurePrompt(message) {
+        if (viewer) {
+          viewer.clear();
+          viewer.render();
+        }
+        fallbackActive = false;
+        els.viewer.style.display = "none";
+        els.fallbackCanvas.style.display = "none";
+        els.loading.textContent = message;
+        els.loading.style.display = "grid";
+      }
+
+      function setStructureTarget(name, sequence, sourceLabel, candidateWindows = 0) {
+        els.targetProteinTitle.textContent = name;
+        els.surfaceTargetMeta.textContent = name;
+        els.source.textContent = sourceLabel;
+        els.candidateWindowMetric.textContent = candidateWindows.toString();
+        syncStructureSequence(sequence);
+      }
+
+      function openSelectedProtein() {
+        const candidate = getProteinCandidate();
+        setStructureTarget(candidate.name, candidate.sequence, `${candidate.name} sequence`, candidate.epitopes.length);
+        currentPdb = "";
+        els.stateText.textContent = "Sequence ready";
+        showStructurePrompt("Fold selected sequence with ESM Atlas.");
+        switchView("structure");
+        showToast(`${candidate.name} loaded into the structure model step.`);
+      }
+
+      function selectProteinCandidate(id, options = {}) {
+        const candidate = getProteinCandidate(id);
+        selectedProteinId = candidate.id;
+        selectedDomainId = candidate.domains[0]?.id || "";
+        updateSurfaceUI();
+        if (options.openStructure) openSelectedProtein();
+      }
+
+      function updateIntake(value, sourceLabel = "") {
+        const letters = stripFasta(value);
+        const kind = detectInputKind(letters);
+        let protein = "";
+        let dnaLength = 0;
+        let codons = [];
+        let frame = kind === "empty" ? "No frame" : "Direct protein";
+
+        if (kind === "dna") {
+          const dna = letters.replace(/U/g, "T").replace(/[^ACGTN]/g, "");
+          const translated = bestProteinFromDNA(dna);
+          protein = translated.protein;
+          codons = translated.codons;
+          dnaLength = dna.length;
+          frame = translated.label;
+        } else if (kind === "protein") {
+          protein = cleanProtein(letters);
+          codons = proteinToCodons(protein);
+        }
+
+        intakeMode = kind;
+        intakeProtein = protein;
+        intakeDnaLength = dnaLength;
+        intakeCodonTriplets = codons.length === protein.length ? codons : proteinToCodons(protein);
+        selectedTripletIndex = protein.length ? clampedTripletIndex({ sequence: protein }, selectedTripletIndex) : 0;
+        els.detectedType.textContent = sourceLabel || (kind === "dna" ? "DNA detected" : kind === "protein" ? "Protein detected" : "Awaiting sequence");
+        els.inputKind.textContent = kind === "dna" ? "DNA/RNA" : kind === "protein" ? "Protein" : "None";
+        els.dnaMetric.textContent = dnaLength.toLocaleString();
+        els.proteinMetric.textContent = `${protein.length.toLocaleString()} aa`;
+        els.frameMetric.textContent = frame;
+        els.inputLimitState.textContent = protein.length ? (protein.length <= 400 ? "protein ready" : "over 400 aa") : "awaiting sequence";
+        els.inputLimitState.style.color = protein.length ? (protein.length <= 400 ? "var(--green)" : "var(--rose)") : "var(--muted)";
+      }
+
+      function syncStructureSequence(sequence) {
+        els.structureSequence.value = sequence;
+        const label = `${sequence.length} aa`;
+        els.structureSequenceCount.textContent = label;
+        const underLimit = sequence.length <= 400;
+        els.structureLimitState.textContent = sequence.length ? (underLimit ? "under 400" : "over 400") : "awaiting sequence";
+        els.structureLimitState.style.color = sequence.length ? (underLimit ? "var(--green)" : "var(--rose)") : "var(--muted)";
+      }
+
+      function formatFileSize(bytes) {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+      }
+
+      function setAttachment(file, text) {
+        attachedFileText = text;
+        els.attachmentName.textContent = file.name;
+        els.attachmentMeta.textContent = `${formatFileSize(file.size)} attached`;
+        els.attachmentTray.hidden = false;
+        els.fileName.textContent = file.name;
+      }
+
+      function clearAttachment(options = {}) {
+        const shouldClearSequence = options.clearSequence ?? true;
+        attachedFileText = "";
+        els.fileInput.value = "";
+        els.attachmentTray.hidden = true;
+        els.attachmentName.textContent = "No file attached";
+        els.attachmentMeta.textContent = "0 KB";
+        els.fileName.textContent = "Accepted: .txt, .fa, .fasta, .fna, .faa, .gb";
+        if (!shouldClearSequence) return;
+
+        els.rawSequence.value = "";
+        sequenceLabel = "Submitted protein";
+        updateIntake("", "Awaiting sequence");
+        updateSurfaceUI();
+        renderAminoChains();
+        setStructureTarget("Target Protein", "", "Awaiting sequence", 0);
+        currentPdb = "";
+        els.stateText.textContent = "Awaiting sequence";
+        showStructurePrompt("Load a sequence from Input, then fold with ESM Atlas.");
+      }
+
+      function applyIntakeToModel(openStructure = true) {
+        if (!intakeProtein) {
+          showToast("Paste or upload a DNA/protein sequence first.");
+          return;
+        }
+        const targetName = intakeMode === "dna" ? "Translated protein candidate" : sequenceLabel;
+        setStructureTarget(targetName, intakeProtein, intakeMode === "dna" ? "Translated DNA input" : "Protein input", 0);
+        currentPdb = "";
+        els.stateText.textContent = "Sequence ready";
+        showStructurePrompt("Fold the loaded sequence with ESM Atlas.");
+        if (intakeProtein.length > 400) showToast("Protein candidate is over 400 aa. Trim to a domain before folding with ESM Atlas.");
+        else showToast("Sequence loaded into the structure model.");
+        if (openStructure) switchView("structure");
+      }
+
+      function loadDemoVirus() {
+        const fasta = `>Demo virus surface protein\n${referenceSequence}`;
+        clearAttachment({ clearSequence: false });
+        sequenceLabel = "Demo virus";
+        els.rawSequence.value = fasta;
+        els.fileName.textContent = "Demo virus test sequence";
+        updateIntake(fasta, "Demo virus loaded");
+        updateSurfaceUI();
+        renderAminoChains();
+        setStructureTarget(sequenceLabel, intakeProtein, "Demo virus test sequence", submittedCandidate().epitopes.length);
+        currentPdb = "";
+        els.stateText.textContent = "Sequence ready";
+        showStructurePrompt("Fold loaded sequence with ESM Atlas.");
+        showToast("Demo virus loaded for testing.");
       }
 
       function showToast(message) {
@@ -875,21 +3843,51 @@
         showToast.timer = window.setTimeout(() => els.toast.classList.remove("show"), 3600);
       }
 
-      function ensureViewer() {
-        if (!window.$3Dmol) {
-          throw new Error("3Dmol failed to load");
+      function switchView(view) {
+        if (!document.getElementById(`screen-${view}`)) return;
+        activeView = view;
+        els.steps.forEach(step => step.classList.toggle("active", step.dataset.view === view));
+        els.screens.forEach(screen => screen.classList.toggle("active", screen.dataset.screen === view));
+        if (window.location.hash !== `#${view}`) history.replaceState(null, "", `#${view}`);
+        if (view === "structure") {
+          if (currentPdb) window.setTimeout(() => renderPdb(currentPdb), 40);
+          else showStructurePrompt("Load a sequence from Input, then fold with ESM Atlas.");
+        } else if (view === "surface") {
+          syncSurfaceEsmVisual(getProteinCandidate());
+          window.setTimeout(maybeFoldSurfaceWithAtlas, 80);
+        } else if (view === "mrna") {
+          renderAminoChains();
         }
+      }
+
+      function parsePdbStats(pdb) {
+        const residues = new Set();
+        const bFactors = [];
+        let atoms = 0;
+        for (const line of pdb.split(/\r?\n/)) {
+          if (!line.startsWith("ATOM")) continue;
+          atoms += 1;
+          residues.add(`${line.slice(21, 22)}:${line.slice(22, 26).trim()}:${line.slice(17, 20).trim()}`);
+          const b = Number.parseFloat(line.slice(60, 66));
+          if (Number.isFinite(b)) bFactors.push(b);
+        }
+        const meanB = bFactors.length ? bFactors.reduce((sum, value) => sum + value, 0) / bFactors.length : 0;
+        return { atoms, residues: residues.size, confidence: Math.round(meanB <= 1 ? meanB * 100 : meanB) };
+      }
+
+      function setStats(pdb) {
+        const stats = parsePdbStats(pdb);
+        els.residues.textContent = stats.residues.toLocaleString();
+        els.atoms.textContent = stats.atoms.toLocaleString();
+        els.confidence.textContent = stats.confidence.toString();
+      }
+
+      function ensureViewer() {
+        if (!window.$3Dmol) throw new Error("3Dmol failed to load");
         const probe = document.createElement("canvas");
         const gl = probe.getContext("webgl2") || probe.getContext("webgl") || probe.getContext("experimental-webgl");
-        if (!gl) {
-          throw new Error("WebGL is unavailable");
-        }
-        if (!viewer) {
-          viewer = window.$3Dmol.createViewer(els.viewer, {
-            backgroundColor: "white",
-            antialias: true
-          });
-        }
+        if (!gl) throw new Error("WebGL is unavailable");
+        if (!viewer) viewer = window.$3Dmol.createViewer(els.viewer, { backgroundColor: "white", antialias: true });
         return viewer;
       }
 
@@ -901,7 +3899,6 @@
           [0.85, [52, 136, 216]],
           [0.95, [49, 79, 184]]
         ];
-
         for (let i = 1; i < stops.length; i += 1) {
           if (value <= stops[i][0]) {
             const [lowV, lowC] = stops[i - 1];
@@ -918,33 +3915,27 @@
         const points = [];
         for (const line of pdb.split(/\r?\n/)) {
           if (!line.startsWith("ATOM")) continue;
-          const atomName = line.slice(12, 16).trim();
-          if (atomName !== "CA") continue;
+          if (line.slice(12, 16).trim() !== "CA") continue;
           const x = Number.parseFloat(line.slice(30, 38));
           const y = Number.parseFloat(line.slice(38, 46));
           const z = Number.parseFloat(line.slice(46, 54));
           const b = Number.parseFloat(line.slice(60, 66));
-          if ([x, y, z, b].every(Number.isFinite)) {
-            points.push({ x, y, z, b });
-          }
+          if ([x, y, z, b].every(Number.isFinite)) points.push({ x, y, z, b });
         }
         return points;
       }
 
-      function renderFallback(pdb) {
-        const canvas = els.fallbackCanvas;
+      function drawFallbackTrace(pdb, canvas, surfaceMode = false) {
         const rect = canvas.getBoundingClientRect();
         const dpr = window.devicePixelRatio || 1;
         canvas.width = Math.max(1, Math.round(rect.width * dpr));
         canvas.height = Math.max(1, Math.round(rect.height * dpr));
-
         const ctx = canvas.getContext("2d");
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, rect.width, rect.height);
 
         const trace = parseTrace(pdb);
         if (trace.length < 2) return;
-
         const angleY = -0.64;
         const angleX = 0.48;
         const projected = trace.map(point => {
@@ -954,7 +3945,6 @@
           const z2 = point.y * Math.sin(angleX) + z1 * Math.cos(angleX);
           return { x: x1, y: y1, z: z2, b: point.b };
         });
-
         const minX = Math.min(...projected.map(point => point.x));
         const maxX = Math.max(...projected.map(point => point.x));
         const minY = Math.min(...projected.map(point => point.y));
@@ -964,7 +3954,6 @@
         const scale = Math.min((rect.width - 120) / Math.max(1, maxX - minX), (rect.height - 120) / Math.max(1, maxY - minY));
         const cx = rect.width / 2 - ((minX + maxX) / 2) * scale;
         const cy = rect.height / 2 - ((minY + maxY) / 2) * scale;
-
         const coords = projected.map(point => ({
           x: point.x * scale + cx,
           y: point.y * scale + cy,
@@ -977,7 +3966,6 @@
         ctx.shadowColor = "rgba(18, 22, 28, 0.16)";
         ctx.shadowBlur = 14;
         ctx.shadowOffsetY = 8;
-
         for (let pass = 0; pass < 2; pass += 1) {
           for (let i = 1; i < coords.length; i += 1) {
             const a = coords[i - 1];
@@ -988,7 +3976,7 @@
             ctx.moveTo(a.x, a.y);
             ctx.lineTo(b.x, b.y);
             ctx.strokeStyle = pass === 0 ? "rgba(255,255,255,0.74)" : confidenceColor(confidence);
-            ctx.lineWidth = pass === 0 ? 14 + depth * 4 : (currentStyle === "surface" ? 10 : 7) + depth * 3;
+            ctx.lineWidth = pass === 0 ? 14 + depth * 4 : (surfaceMode ? 10 : 7) + depth * 3;
             ctx.globalAlpha = pass === 0 ? 0.96 : 0.9;
             ctx.stroke();
           }
@@ -1008,12 +3996,138 @@
         }
       }
 
+      function renderFallback(pdb) {
+        drawFallbackTrace(pdb, els.fallbackCanvas, currentStyle === "surface");
+      }
+
       function showFallback(pdb) {
         fallbackActive = true;
         els.viewer.style.display = "none";
         els.fallbackCanvas.style.display = "block";
         els.loading.style.display = "none";
         renderFallback(pdb);
+      }
+
+      function setSurfaceEsmInputStats(sequence) {
+        const target = surfaceFoldTarget({ sequence, epitopes: predictedExposureMarkers(sequence) });
+        els.surfaceEsmDnaMetric.textContent = intakeDnaLength.toLocaleString();
+        els.surfaceEsmResidueMetric.textContent = target.isWindow
+          ? `${target.sequence.length.toLocaleString()} / ${sequence.length.toLocaleString()}`
+          : sequence.length.toLocaleString();
+        els.surfaceEsmAtomMetric.textContent = "0";
+        els.surfaceEsmConfidenceMetric.textContent = "--";
+      }
+
+      function showSurfaceEsmPrompt(message) {
+        if (surfaceEsmViewer) {
+          surfaceEsmViewer.clear();
+          surfaceEsmViewer.render();
+        }
+        surfaceEsmFallbackActive = false;
+        els.surfaceEsmViewer.style.display = "none";
+        els.surfaceEsmFallbackCanvas.style.display = "none";
+        els.surfaceEsmLoading.textContent = message;
+        els.surfaceEsmLoading.style.display = "grid";
+      }
+
+      function syncSurfaceEsmVisual(candidate = getProteinCandidate()) {
+        const sequence = candidate.sequence || "";
+        const target = surfaceFoldTarget(candidate);
+        setSurfaceEsmInputStats(sequence);
+        const foldable = target.sequence.length > 0;
+        els.surfaceEsmFoldButton.disabled = !foldable || surfaceEsmFolding;
+
+        if (!sequence.length) {
+          surfaceEsmPdb = "";
+          surfaceEsmSequence = "";
+          surfaceEsmAttemptedSequence = "";
+          els.surfaceEsmSource.textContent = "Awaiting sequence";
+          showSurfaceEsmPrompt("Awaiting sequence");
+          return;
+        }
+
+        if (surfaceEsmSequence !== sequence) {
+          surfaceEsmPdb = "";
+          surfaceEsmSequence = sequence;
+          surfaceEsmAttemptedSequence = "";
+          els.surfaceEsmSource.textContent = target.isWindow
+            ? `Using residues ${target.start}-${target.end} of ${target.fullLength}`
+            : (intakeMode === "dna" ? "Translated DNA input" : "Protein input");
+          showSurfaceEsmPrompt(
+            target.isWindow
+              ? `Sequence is ${target.fullLength} aa; preparing a real-data ${target.sequence.length} aa ESM window`
+              : "Ready for Meta ESM refresh"
+          );
+          return;
+        }
+
+        if (!surfaceEsmPdb) {
+          els.surfaceEsmSource.textContent = target.isWindow
+            ? `Ready to fold residues ${target.start}-${target.end} of ${target.fullLength}`
+            : "Ready for Meta ESM refresh";
+        }
+      }
+
+      function ensureSurfaceEsmViewer() {
+        if (!window.$3Dmol) throw new Error("3Dmol failed to load");
+        const probe = document.createElement("canvas");
+        const gl = probe.getContext("webgl2") || probe.getContext("webgl") || probe.getContext("experimental-webgl");
+        if (!gl) throw new Error("WebGL is unavailable");
+        if (!surfaceEsmViewer) surfaceEsmViewer = window.$3Dmol.createViewer(els.surfaceEsmViewer, { backgroundColor: "white", antialias: true });
+        return surfaceEsmViewer;
+      }
+
+      function renderSurfaceEsmFallback(pdb) {
+        drawFallbackTrace(pdb, els.surfaceEsmFallbackCanvas, true);
+      }
+
+      function showSurfaceEsmFallback(pdb) {
+        surfaceEsmFallbackActive = true;
+        els.surfaceEsmViewer.style.display = "none";
+        els.surfaceEsmFallbackCanvas.style.display = "block";
+        els.surfaceEsmLoading.style.display = "none";
+        renderSurfaceEsmFallback(pdb);
+      }
+
+      function renderSurfaceEsmPdb(pdb, target = surfaceFoldTarget(), options = {}) {
+        surfaceEsmPdb = pdb;
+        const stats = parsePdbStats(pdb);
+        els.surfaceEsmResidueMetric.textContent = target.isWindow
+          ? `${stats.residues.toLocaleString()} / ${target.fullLength.toLocaleString()}`
+          : stats.residues.toLocaleString();
+        els.surfaceEsmAtomMetric.textContent = stats.atoms.toLocaleString();
+        els.surfaceEsmConfidenceMetric.textContent = options.confidenceLabel || stats.confidence.toString();
+        els.surfaceEsmSource.textContent = options.sourceLabel || (target.isWindow
+          ? `Live Meta ESM fold: residues ${target.start}-${target.end} of ${target.fullLength}`
+          : "Live Meta ESM fold");
+
+        let v;
+        try {
+          v = ensureSurfaceEsmViewer();
+        } catch (error) {
+          showSurfaceEsmFallback(pdb);
+          return;
+        }
+
+        surfaceEsmFallbackActive = false;
+        els.surfaceEsmViewer.style.display = "block";
+        els.surfaceEsmFallbackCanvas.style.display = "none";
+        els.surfaceEsmLoading.style.display = "none";
+        v.clear();
+        const model = v.addModel(pdb, "pdb");
+        model.setStyle({}, {});
+        v.setStyle({}, {
+          cartoon: {
+            thickness: 0.38,
+            colorscheme: { prop: "b", gradient: "roygb", min: 0.25, max: 0.95 }
+          }
+        });
+        v.addSurface(window.$3Dmol.SurfaceType.VDW, {
+          opacity: 0.28,
+          colorscheme: { prop: "b", gradient: "roygb", min: 0.25, max: 0.95 }
+        });
+        v.zoomTo();
+        v.render();
       }
 
       function setActiveStyleButton() {
@@ -1023,9 +4137,8 @@
 
       function renderPdb(pdb) {
         currentPdb = pdb;
-        setActiveStyleButton();
         setStats(pdb);
-
+        setActiveStyleButton();
         let v;
         try {
           v = ensureViewer();
@@ -1038,63 +4151,138 @@
         els.viewer.style.display = "block";
         els.fallbackCanvas.style.display = "none";
         els.loading.style.display = "none";
-
         v.clear();
         const model = v.addModel(pdb, "pdb");
         model.setStyle({}, {});
-
         if (currentStyle === "surface") {
-          v.setStyle({}, {
-            cartoon: {
-              color: "#4d5662",
-              opacity: 0.32
-            }
-          });
+          v.setStyle({}, { cartoon: { color: "#4d5662", opacity: 0.32 } });
           v.addSurface(window.$3Dmol.SurfaceType.VDW, {
             opacity: 0.82,
-            colorscheme: {
-              prop: "b",
-              gradient: "roygb",
-              min: 0.25,
-              max: 0.95
-            }
+            colorscheme: { prop: "b", gradient: "roygb", min: 0.25, max: 0.95 }
           });
         } else {
           v.setStyle({}, {
             cartoon: {
               thickness: 0.42,
-              colorscheme: {
-                prop: "b",
-                gradient: "roygb",
-                min: 0.25,
-                max: 0.95
-              }
+              colorscheme: { prop: "b", gradient: "roygb", min: 0.25, max: 0.95 }
             }
           });
         }
-
         v.zoomTo();
         v.spin(spinning);
         v.render();
       }
 
-      async function loadDemoPdb() {
-        els.stateText.textContent = "Loading demo";
-        els.loading.style.display = "grid";
-        const response = await fetch("esmfold-demo.pdb");
-        if (!response.ok) throw new Error("Could not load esmfold-demo.pdb");
-        const pdb = await response.text();
-        els.sequence.value = sampleSequence;
-        els.source.textContent = "Local ESMFold PDB";
-        updateSequenceState();
-        renderPdb(pdb);
-        els.stateText.textContent = "Ready";
+      async function requestAtlasFold(sequence) {
+        const response = await fetch("https://api.esmatlas.com/foldSequence/v1/pdb/", {
+          method: "POST",
+          body: sequence,
+          headers: { "Content-Type": "text/plain" }
+        });
+        if (!response.ok) throw new Error(`ESM Atlas returned ${response.status}`);
+        return response.text();
+      }
+
+      function pdbAtomLine(serial, atomName, residueName, residueIndex, x, y, z, bFactor, element) {
+        return [
+          "ATOM  ",
+          serial.toString().padStart(5),
+          `  ${atomName.padEnd(3)} `,
+          residueName,
+          " A",
+          residueIndex.toString().padStart(4),
+          "    ",
+          x.toFixed(3).padStart(8),
+          y.toFixed(3).padStart(8),
+          z.toFixed(3).padStart(8),
+          "  1.00",
+          bFactor.toFixed(2).padStart(6),
+          "          ",
+          element.padStart(2)
+        ].join("");
+      }
+
+      function buildSequenceTracePdb(sequence) {
+        const lines = [];
+        let serial = 1;
+        sequence.split("").forEach((aminoAcid, index) => {
+          const residueIndex = index + 1;
+          const residueName = aminoAcidResidueNames[aminoAcid] || "GLY";
+          const hydro = hydropathyScale[aminoAcid] ?? 0;
+          const angle = index * 0.58;
+          const radius = 8 + hydro * 0.45 + Math.sin(index * 0.09) * 1.6;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          const z = index * 1.18 + Math.sin(index * 0.17) * 3.4;
+          const bFactor = clamp(68 - Math.abs(hydro) * 4 + Math.sin(index * 0.11) * 7, 42, 86);
+          [
+            ["N", x - 0.52, y - 0.18, z - 0.36, "N"],
+            ["CA", x, y, z, "C"],
+            ["C", x + 0.52, y + 0.18, z + 0.36, "C"],
+            ["O", x + 0.86, y + 0.3, z + 0.64, "O"]
+          ].forEach(([atomName, ax, ay, az, element]) => {
+            lines.push(pdbAtomLine(serial, atomName, residueName, residueIndex, ax, ay, az, bFactor, element));
+            serial += 1;
+          });
+        });
+        lines.push("TER", "END");
+        return lines.join("\n");
+      }
+
+      async function foldSurfaceWithAtlas(options = {}) {
+        const candidate = getProteinCandidate();
+        const target = surfaceFoldTarget(candidate);
+        if (!target.sequence) {
+          showToast("Paste or upload a DNA/protein sequence first.");
+          return;
+        }
+        if (surfaceEsmFolding) return;
+
+        surfaceEsmSequence = candidate.sequence;
+        surfaceEsmAttemptedSequence = target.key;
+        surfaceEsmFolding = true;
+        els.surfaceEsmFoldButton.disabled = true;
+        els.surfaceEsmSource.textContent = target.isWindow
+          ? `Folding residues ${target.start}-${target.end} of ${target.fullLength}`
+          : "Folding with Meta ESM";
+        els.surfaceEsmLoading.textContent = target.isWindow
+          ? `Folding uploaded-sequence window ${target.start}-${target.end} with Meta ESM`
+          : "Folding full translated sequence with Meta ESM";
+        els.surfaceEsmLoading.style.display = "grid";
+        els.surfaceEsmViewer.style.display = "none";
+        els.surfaceEsmFallbackCanvas.style.display = "none";
+
+        try {
+          const pdb = await requestAtlasFold(target.sequence);
+          renderSurfaceEsmPdb(pdb, target);
+          if (!options.silent) showToast("Step 2 Meta ESM visual generated.");
+        } catch (error) {
+          const fallbackPdb = buildSequenceTracePdb(target.sequence);
+          renderSurfaceEsmPdb(fallbackPdb, target, {
+            sourceLabel: target.isWindow
+              ? `Sequence-derived visual: residues ${target.start}-${target.end} of ${target.fullLength}`
+              : "Sequence-derived visual",
+            confidenceLabel: "--"
+          });
+          if (!options.silent) showToast(`${error.message}. Showing a sequence-derived visual.`);
+        } finally {
+          surfaceEsmFolding = false;
+          els.surfaceEsmFoldButton.disabled = !surfaceFoldTarget().sequence;
+        }
+      }
+
+      function maybeFoldSurfaceWithAtlas() {
+        const target = surfaceFoldTarget();
+        if (activeView !== "surface") return;
+        if (!target.sequence || surfaceEsmPdb || surfaceEsmFolding) return;
+        if (surfaceEsmAttemptedSequence === target.key) return;
+        foldSurfaceWithAtlas({ silent: true });
       }
 
       async function foldWithAtlas() {
-        const sequence = cleanSequence(els.sequence.value);
+        const sequence = cleanProtein(els.structureSequence.value);
         if (!sequence) {
-          showToast("Paste a protein sequence before folding.");
+          showToast("Add a protein sequence before folding.");
           return;
         }
         if (sequence.length > 400) {
@@ -1103,20 +4291,12 @@
         }
 
         els.foldButton.disabled = true;
-        els.demoButton.disabled = true;
         els.stateText.textContent = "Folding";
+        els.loading.textContent = "Folding with ESM Atlas";
         els.loading.style.display = "grid";
 
         try {
-          const response = await fetch("https://api.esmatlas.com/foldSequence/v1/pdb/", {
-            method: "POST",
-            body: sequence,
-            headers: {
-              "Content-Type": "text/plain"
-            }
-          });
-          if (!response.ok) throw new Error(`ESM Atlas returned ${response.status}`);
-          const pdb = await response.text();
+          const pdb = await requestAtlasFold(sequence);
           els.source.textContent = "Live ESM Atlas fold";
           renderPdb(pdb);
           els.stateText.textContent = "Ready";
@@ -1124,17 +4304,116 @@
         } catch (error) {
           els.stateText.textContent = "API blocked";
           els.loading.style.display = "none";
-          showToast(`${error.message}. Load the demo PDB or run the curl command from the terminal.`);
+          showToast(`${error.message}. Check the sequence or try again.`);
         } finally {
           els.foldButton.disabled = false;
-          els.demoButton.disabled = false;
         }
       }
 
-      els.sequence.value = sampleSequence;
-      updateSequenceState();
-      els.sequence.addEventListener("input", updateSequenceState);
-      els.demoButton.addEventListener("click", () => loadDemoPdb().catch(error => showToast(error.message)));
+      els.rawSequence.value = "";
+      updateIntake("", "Awaiting sequence");
+      updateSurfaceUI();
+      setStructureTarget("Target Protein", "", "Awaiting sequence", 0);
+      showStructurePrompt("Load a sequence from Input, then fold with ESM Atlas.");
+      renderAminoChains();
+
+      els.steps.forEach(step => step.addEventListener("click", () => switchView(step.dataset.view)));
+      document.querySelectorAll("[data-jump]").forEach(button => {
+        button.addEventListener("click", () => switchView(button.dataset.jump));
+      });
+      document.querySelectorAll("[data-toast]").forEach(button => {
+        button.addEventListener("click", () => showToast(button.dataset.toast));
+      });
+      els.surfaceRail.addEventListener("click", event => {
+        const segment = event.target.closest("[data-domain-id]");
+        if (segment) selectDomain(segment.dataset.domainId);
+      });
+      els.partLegend.addEventListener("click", event => {
+        const card = event.target.closest("[data-domain-id]");
+        if (card) selectDomain(card.dataset.domainId);
+      });
+      els.sequenceStrip.addEventListener("click", event => {
+        const step = event.target.closest("[data-triplet-step]");
+        if (step) {
+          selectTriplet(selectedTripletIndex + Number(step.dataset.tripletStep), { focus: true });
+          return;
+        }
+        const triplet = event.target.closest("[data-triplet-index]");
+        if (triplet) selectTriplet(Number(triplet.dataset.tripletIndex));
+      });
+      els.sequenceStrip.addEventListener("keydown", event => {
+        const triplet = event.target.closest("[data-triplet-index]");
+        if (!triplet) return;
+
+        const columnStep = Math.max(1, Math.floor(els.sequenceStrip.clientWidth / 74));
+        const keySteps = {
+          ArrowLeft: -1,
+          ArrowRight: 1,
+          ArrowUp: -columnStep,
+          ArrowDown: columnStep,
+          Home: -selectedTripletIndex,
+          End: getProteinCandidate().sequence.length - selectedTripletIndex - 1
+        };
+        if (!(event.key in keySteps)) return;
+
+        event.preventDefault();
+        selectTriplet(selectedTripletIndex + keySteps[event.key], { focus: true });
+      });
+      els.proteinRankingRows.addEventListener("click", event => {
+        const row = event.target.closest("[data-protein-id]");
+        if (row) selectProteinCandidate(row.dataset.proteinId, { openStructure: true });
+      });
+      els.proteinRankingRows.addEventListener("keydown", event => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        const row = event.target.closest("[data-protein-id]");
+        if (!row) return;
+        event.preventDefault();
+        selectProteinCandidate(row.dataset.proteinId, { openStructure: true });
+      });
+      els.openSelectedProteinButton.addEventListener("click", openSelectedProtein);
+      els.rawSequence.addEventListener("input", () => {
+        if (attachedFileText && els.rawSequence.value !== attachedFileText) clearAttachment({ clearSequence: false });
+        sequenceLabel = "Submitted protein";
+        updateIntake(els.rawSequence.value);
+        updateSurfaceUI();
+        renderAminoChains();
+      });
+      els.fileInput.addEventListener("change", async () => {
+        const file = els.fileInput.files && els.fileInput.files[0];
+        if (!file) return;
+        const text = await file.text();
+        els.rawSequence.value = text;
+        sequenceLabel = file.name;
+        setAttachment(file, text);
+        updateIntake(text, `Loaded ${file.name}`);
+        updateSurfaceUI();
+        renderAminoChains();
+        if (!intakeProtein) {
+          showToast(`Loaded ${file.name}, but no readable protein sequence was detected.`);
+          return;
+        }
+        const targetName = intakeMode === "dna" ? "Translated protein candidate" : sequenceLabel;
+        setStructureTarget(targetName, intakeProtein, `Uploaded ${file.name}`, submittedCandidate().epitopes.length);
+        currentPdb = "";
+        surfaceEsmPdb = "";
+        surfaceEsmAttemptedSequence = "";
+        els.stateText.textContent = "Sequence ready";
+        showStructurePrompt("Uploaded sequence ready for ESM Atlas.");
+        switchView("surface");
+        showToast(`Loaded ${file.name}. Generating the Step 2 visual.`);
+        foldSurfaceWithAtlas();
+      });
+      els.loadDemoVirusButton.addEventListener("click", loadDemoVirus);
+      els.clearAttachmentButton.addEventListener("click", () => clearAttachment());
+      els.useIntakeButton.addEventListener("click", () => applyIntakeToModel(true));
+      els.structureSequence.addEventListener("input", () => syncStructureSequence(cleanProtein(els.structureSequence.value)));
+      els.surfaceEsmFoldButton.addEventListener("click", () => foldSurfaceWithAtlas());
+      els.surfaceEsmCenterButton.addEventListener("click", () => {
+        if (surfaceEsmViewer) {
+          surfaceEsmViewer.zoomTo();
+          surfaceEsmViewer.render();
+        }
+      });
       els.foldButton.addEventListener("click", foldWithAtlas);
       els.cartoonButton.addEventListener("click", () => {
         currentStyle = "cartoon";
@@ -1160,18 +4439,20 @@
       });
 
       window.addEventListener("resize", () => {
-        if (fallbackActive && currentPdb) {
-          renderFallback(currentPdb);
-        } else if (viewer) {
+        if (fallbackActive && currentPdb) renderFallback(currentPdb);
+        else if (viewer) {
           viewer.resize();
           viewer.render();
         }
+        if (surfaceEsmFallbackActive && surfaceEsmPdb) renderSurfaceEsmFallback(surfaceEsmPdb);
+        else if (surfaceEsmViewer) {
+          surfaceEsmViewer.resize();
+          surfaceEsmViewer.render();
+        }
       });
 
-      loadDemoPdb().catch(error => {
-        els.loading.textContent = "Model unavailable";
-        showToast(error.message);
-      });
+      const initialView = window.location.hash.slice(1);
+      if (initialView) switchView(initialView);
     </script>
   </body>
 </html>
