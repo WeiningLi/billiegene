@@ -30,7 +30,8 @@ import {
   Layers,
   Printer,
   LayoutGrid,
-  List
+  List,
+  BookOpen
 } from "lucide-react";
 import { PATHOGEN_PRESETS } from "./data";
 import { Epitope, ProteinFeature } from "./types";
@@ -39,6 +40,81 @@ import MarkdownRenderer from "./components/MarkdownRenderer";
 import Molecular3DVisualizer from "./components/Molecular3DVisualizer";
 
 const sampleSequence = "GENGEIPLEIRATTGAEVDTRAVTAVEMTEGTLGIFRLPEEDYTALENFRYNRVAGENWKPASTVIYVGGTYARLCAYAPYNSVEFKNSSLKTEAGLTMQTYAAEKDMRFAVSGGDEVWKKTPTANFELKRAYARLVLSVVRDATYPNTCKITKAKIEAFTGNIITANTVDISTGTEGSGTQTPQYIHTVTTGLKDGFAIGLPQQTFSGGVVLTLTVDGMEYSVTIPANKLSTFVRGTKYIVSLAVKGGKLTLMSDKILIDKDWAEVQTGTGGSGDDYDTSFN";
+
+const DIAGRAM_NODES = {
+  human: {
+    title: "Human Biophysicist (Researcher)",
+    icon: Sparkles,
+    role: "Defines vaccine targeting requirements, selects raw pathogen isolates, and sets clinical constraint thresholds.",
+    inputs: ["Raw FASTA Sequence", "Host Cohort Profiles", "Maximum Peptide Length Filter", "Human Guidance Overrides"],
+    outputs: ["Clinical Design Parameters", "Filter Directives"],
+    color: "emerald-500",
+    details: "The scientist coordinates real-time biological objectives. Using the Human-In-The-Loop text field and custom panel sliders, the scientist overrides automated scoring thresholds, specifies demographic focuses, or guides the pipeline to favor higher population compatibility over structural accessibility."
+  },
+  orchestrator: {
+    title: "Workflow Context Coordinator (Orchestrator)",
+    icon: RefreshCw,
+    role: "Maintains chronological state memory, delegates subtasks, routes payloads, and manages real-time feedback context loops.",
+    inputs: ["Clinical Constraints", "Active Stage States", "Researcher Chat Instructions"],
+    outputs: ["Delegated Agent Jobs", "Aggregated Context Records"],
+    color: "teal-brand",
+    details: "Powered by Gemini LLM orchestration, the coordinator is the brain of Billie Gene. It acts as an API gateway and memory bank, ensuring each change to biological sequence variables propagates safely down the pipeline and updates downstream calculations."
+  },
+  surface: {
+    title: "Agent 1: Surface Dynamics Finder",
+    icon: Activity,
+    role: "Extracts exposed external residues and glycosylation shields to target highly reachable antibody coordinates.",
+    inputs: ["Protein Weight, Size Coordinates", "Amino Acid Chain Array"],
+    outputs: ["Membrane Exposure Coefficients", "Accessible Slices Vector"],
+    color: "blue-500",
+    details: "Calculates solvent accessible surface areas (SASA) of peptides. Looks for viral glycosylation shields — sugar chains that coat antigens to hide them from host antibodies. Highly exposed regions are flagged as premium candidates."
+  },
+  folding: {
+    title: "Agent 2: Biophysics Folds Evaluator",
+    icon: Atom,
+    role: "Analyzes structural stability, mutational variation bounds, helix-loop folders, and lipid hydrophobic clusters.",
+    inputs: ["Secondary Folding Calculations", "3D Chemical Residue Coordinates", "AlphaFold Coordinates (WebGL)"],
+    outputs: ["Alpha-Helix Fold Index", "Hydrophobic Shield Scores", "Thermostable Margin Matrix"],
+    color: "purple-500",
+    details: "Performs molecular dynamics audits. Reconsiders 3D secondary folding configurations (alpha helices, beta sheets, random coils). Filters out regions that would fold inward randomly, making sure the target is physically stable."
+  },
+  epitope: {
+    title: "Agent 3: MHC Presentation & HLA Docking Predictor",
+    icon: Search,
+    role: "Models binding affinities for MHC Class-I/II and B-cell receptors to guarantee multi-demographic coverage.",
+    inputs: ["Filtered Epitopes Array", "Worldwide HLA-Allotypic Frequencies Table", "Binding Affinity Estimators"],
+    outputs: ["Immunogenicity Scores", "Estimated Population Distribution Coverage Logs"],
+    color: "yellow-500",
+    details: "Matches vaccine candidates against global HLA (Human Leukocyte Antigen) allele types. Sorts and filters peptide matrices through high-density interactive plate grid arrays to maximize therapeutic utility across varied human cohorts."
+  },
+  synthesizer: {
+    title: "Agent 4: mRNA Codon & Linker Assembler",
+    icon: Beaker,
+    role: "Splices peptides using biochemical spacer tags and translates sequences into highly optimized codon-aligned mRNA templates.",
+    inputs: ["Selected Epitope Sequences", "Spacer Options (GGGGS vs AAY Linkers)", "GC-Bias Nucleotide Models"],
+    outputs: ["Sequenced mRNA Blueprint", "N1-Methylpseudouridine Coordinated Vector", "Poly(A) Frame Map"],
+    color: "green-500",
+    details: "Engineers the final physical genetic delivery chain. Inserts rigid linker spacers (like AAY) to prevent junctional epitope creation while adding flanking untranslated regions and robust Poly(A) complexes to prevent early host degradation."
+  },
+  safety: {
+    title: "Agent 5: Pharmacogenomics Safety Auditor",
+    icon: Shield,
+    role: "Cross-checks clinical markers against CPIC guidelines & PharmGKB to prevent mimicry-induced autoimmune flareups.",
+    inputs: ["Synthesized Constructs", "ClinVar Pathological Database", "PharmGKB CPIC Biomarkers", "Host Genome References"],
+    outputs: ["Toxicity Safety Audits", "Autoimmune Mimicry Warnings", "Homology Conflict Logs"],
+    color: "red-400",
+    details: "Acts as a clinical security guard. Runs BLAST homologies relative to the host genome, discarding candidates that match healthy cardiac, neurological, or muscle tissue to prevent lethal off-target inflammation."
+  },
+  dossier: {
+    title: "Finished Vaccine Prospect Dossier",
+    icon: FileText,
+    role: "Secures a structured, production-ready genetic vaccine target blueprint summarizing all parameters and safety clearances.",
+    inputs: ["Full Subagent Pipeline Records", "Quality Control Certifications", "ClinVar Mutational Logs"],
+    outputs: ["Unified Molecular Target Dossier", "Clinical Trial-Ready Brief", "Codon-Optimized mRNA Stream"],
+    color: "blue-400",
+    details: "The ultimate output of the Billie Gene workspace. A fully cross-validated, safety-vetted candidate prospectus package formatted in readable medical Markdown, ready for downstream synthesis and wet-lab clinical validation."
+  }
+};
 
 // Step structure mapping onto the HTML navigation stepper
 const STEP_LABELS = [
@@ -310,6 +386,11 @@ export default function App() {
   const [activeSurfTab, setActiveSurfTab] = useState<"slices" | "report">("slices");
   const [activeAnnotatorTab, setActiveAnnotatorTab] = useState<"metrics" | "report">("metrics");
   const [activeConstructTab, setActiveConstructTab] = useState<"spacers" | "report">("spacers");
+
+  // Static info page footer tabs
+  const [activeFooterTab, setActiveFooterTab] = useState<"overview" | "architecture" | "collaboration">("overview");
+  const [showUserGuide, setShowUserGuide] = useState<boolean>(false);
+  const [selectedDiagramNode, setSelectedDiagramNode] = useState<"human" | "orchestrator" | "surface" | "folding" | "epitope" | "synthesizer" | "safety" | "dossier">("orchestrator");
 
   // Parallel Slicing variables
   const [isScreening, setIsScreening] = useState<boolean>(false);
@@ -1110,14 +1191,666 @@ The parallel screen indicates that **${slice.name}** offers the most viable targ
             <Dna className="w-6 h-6 rotate-45 animate-pulse" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-ink font-sans h-8 flex items-center">Billie Gene</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-ink font-sans h-8 flex items-center cursor-pointer" onClick={() => setShowUserGuide(false)}>
+              Billie Gene
+            </h1>
             <span className="text-xs text-muted-ink mt-0.5 block leading-none font-medium">Protein model screen & Multi-agent workflow</span>
           </div>
         </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            id="btn_header_user_guide"
+            onClick={() => setShowUserGuide(!showUserGuide)}
+            className={`px-4 py-2 rounded-xl text-xs font-bold tracking-wide transition-all duration-150 flex items-center gap-2 border shadow-sm cursor-pointer select-none ${
+              showUserGuide
+                ? "bg-slate-900 border-slate-900 text-white hover:bg-slate-800"
+                : "bg-teal-brand/10 border-teal-brand/20 text-teal-brand hover:bg-teal-brand hover:text-white"
+            }`}
+          >
+            {showUserGuide ? (
+              <>
+                <ArrowRight className="w-3.5 h-3.5 rotate-180" />
+                <span>Back to Workspace</span>
+              </>
+            ) : (
+              <>
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>User Guide & Design Flow</span>
+              </>
+            )}
+          </button>
+        </div>
       </header>
 
-      {/* Navigation horizontal stepper */}
-      <nav className="bg-panel-light border-b border-line px-8 overflow-x-auto select-none max-w-full shrink-0">
+      {showUserGuide ? (
+        <div className="flex-1 w-full bg-slate-900 text-slate-100 flex flex-col pt-8 pb-12 px-8 overflow-y-auto select-text">
+          <div className="max-w-7xl mx-auto space-y-8 w-full">
+            
+            {/* Footer Top Header */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-slate-800 pb-6">
+              <div className="space-y-1.5 text-center md:text-left font-sans">
+                <div className="flex items-center gap-2.5 justify-center md:justify-start">
+                  <span className="p-1.5 bg-teal-brand/10 text-teal-brand rounded-lg border border-teal-brand/20 flex items-center justify-center">
+                    <Info className="w-4 h-4" />
+                  </span>
+                  <h4 className="text-sm font-bold tracking-wider uppercase font-sans text-teal-brand">
+                    System Architecture & Interactive Design Flow
+                  </h4>
+                </div>
+                <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
+                  Learn how human researchers, generative LLM orchestrators, and rigorous molecular biocomputations collaborate in real-time to design targetable genetic vaccines.
+                </p>
+              </div>
+
+              {/* Navigation Tabs for Guide */}
+              <div className="flex items-center gap-1.5 bg-slate-950/60 p-1 rounded-lg border border-slate-800 font-mono text-xs shadow-inner shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setActiveFooterTab("overview")}
+                  className={`px-3 py-1.5 rounded cursor-pointer transition-all duration-150 font-bold ${
+                    activeFooterTab === "overview"
+                      ? "bg-teal-brand text-white shadow-md font-semibold"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  End-to-End User Flow
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveFooterTab("architecture")}
+                  className={`px-3 py-1.5 rounded cursor-pointer transition-all duration-150 font-bold ${
+                    activeFooterTab === "architecture"
+                      ? "bg-teal-brand text-white shadow-md font-semibold"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  Subagent Team capabilities
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveFooterTab("collaboration")}
+                  className={`px-3 py-1.5 rounded cursor-pointer transition-all duration-150 font-bold ${
+                    activeFooterTab === "collaboration"
+                      ? "bg-teal-brand text-white shadow-md font-semibold"
+                      : "text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  Agentic Collaboration Roles
+                </button>
+              </div>
+            </div>
+
+            {/* Visual Concept Flowchart */}
+            {activeFooterTab === "overview" && (
+              <div className="bg-slate-950/40 border border-slate-800/80 p-5 rounded-xl space-y-4 animate-fadeIn">
+                <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 tracking-wider uppercase">
+                  <span>Interactive Pipeline Schematic Map</span>
+                  <span className="text-teal-brand font-bold">100% Client-Side Executable Blueprint</span>
+                </div>
+                
+                {/* Schematic Flow Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3.5 pt-1">
+                  <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-lg text-center flex flex-col justify-between items-center h-[96px]">
+                    <span className="text-[10px] font-mono text-slate-500 font-bold">STAGE 1</span>
+                    <Dna className="w-5 h-5 text-teal-brand shrink-0" />
+                    <span className="text-[10px] font-bold text-slate-200 leading-tight">Sequence Ingress</span>
+                  </div>
+                  
+                  <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-lg text-center flex flex-col justify-between items-center h-[96px]">
+                    <span className="text-[10px] font-mono text-slate-500 font-bold">STAGE 2</span>
+                    <Layers className="w-5 h-5 text-yellow-500 shrink-0" />
+                    <span className="text-[10px] font-bold text-slate-200 leading-tight">Slicing Swarms</span>
+                  </div>
+
+                  <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-lg text-center flex flex-col justify-between items-center h-[96px]">
+                    <span className="text-[10px] font-mono text-slate-500 font-bold">STAGE 3</span>
+                    <Atom className="w-5 h-5 text-purple-500 shrink-0" />
+                    <span className="text-[10px] font-bold text-slate-200 leading-tight">Biophysics Fitted</span>
+                  </div>
+
+                  <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-lg text-center flex flex-col justify-between items-center h-[96px]">
+                    <span className="text-[10px] font-mono text-slate-500 font-bold">STAGE 4</span>
+                    <Search className="w-5 h-5 text-teal-brand shrink-0" />
+                    <span className="text-[10px] font-bold text-slate-200 leading-tight">MHC Core Docking</span>
+                  </div>
+
+                  <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-lg text-center flex flex-col justify-between items-center h-[96px]">
+                    <span className="text-[10px] font-mono text-slate-500 font-bold">STAGE 5</span>
+                    <Beaker className="w-5 h-5 text-green-500 shrink-0" />
+                    <span className="text-[10px] font-bold text-slate-200 leading-tight">mRNA Blueprint</span>
+                  </div>
+
+                  <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-lg text-center flex flex-col justify-between items-center h-[96px]">
+                    <span className="text-[10px] font-mono text-slate-500 font-bold">STAGE 6</span>
+                    <Shield className="w-5 h-5 text-red-400 shrink-0" />
+                    <span className="text-[10px] font-bold text-slate-200 leading-tight">Safety Auditing</span>
+                  </div>
+
+                  <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-lg text-center flex flex-col justify-between items-center h-[96px]">
+                    <span className="text-[10px] font-mono text-slate-500 font-bold">STAGE 7</span>
+                    <FileText className="w-5 h-5 text-blue-400 shrink-0" />
+                    <span className="text-[10px] font-bold text-slate-200 leading-tight">Final Dossier</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Multi-Agent Collaboration Topology & Inspector */}
+            {activeFooterTab === "collaboration" && (
+              <div className="bg-slate-950/40 border border-slate-800/80 rounded-xl p-6 space-y-5">
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold tracking-wide text-slate-100 flex items-center gap-1.5 uppercase font-sans">
+                    <span className="w-2.5 h-2.5 bg-teal-brand rounded-full animate-pulse" />
+                    Multi-Agent Collaboration Mesh & Live Inspector
+                  </h4>
+                  <p className="text-[11px] text-slate-400 font-sans">
+                    Click any element in the interactive network topology map below to details its analytical domain, clinical input vectors, and outputs.
+                  </p>
+                </div>
+                <div className="text-[10px] font-mono text-slate-500 tracking-wider uppercase bg-slate-950/80 px-2.5 py-1 rounded border border-slate-800 w-fit">
+                  Flow Model: <span className="text-teal-brand font-bold">Feedback Loop Activated</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                {/* INTERACTIVE TOPOLOGY MAP (lg:col-span-7) */}
+                <div className="lg:col-span-7 bg-slate-950/80 rounded-xl border border-slate-800/60 p-5 flex flex-col justify-between min-h-[460px] relative overflow-hidden">
+                  
+                  {/* Subtle Grid Pattern Background */}
+                  <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] opacity-15 pointer-events-none" />
+
+                  {/* Horizontally Scrollable wrapper to allow 100% stable layout proportions on any device */}
+                  <div className="w-full overflow-x-auto pb-2 select-none scrollbar-thin relative z-10">
+                    <div className="relative w-[670px] h-[430px] mx-auto shrink-0">
+                      
+                      {/* Flow Connections Vector Layout */}
+                      <svg className="absolute inset-0 w-full h-full pointer-events-none text-slate-800 z-0" viewBox="0 0 670 430" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        {/* Human -> Orchestrator Arrow */}
+                        <path d="M 240 62.5 L 410 62.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 3" className="text-teal-brand/35" />
+                        
+                        {/* Orchestrator -> Subagents Hub (Splitting Tree) */}
+                        <path d="M 525 105 L 525 140" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        <path d="M 70 140 L 600 140" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        
+                        {/* Feeder lines to specific nodes */}
+                        <path d="M 70 140 L 70 180" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        <path d="M 202 140 L 202 180" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        <path d="M 335 140 L 335 180" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        <path d="M 467 140 L 467 180" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        <path d="M 600 140 L 600 180" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        
+                        {/* Parallel outputs collect down to Dossier */}
+                        <path d="M 70 268 L 70 310" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        <path d="M 202 268 L 202 310" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        <path d="M 335 268 L 335 310" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        <path d="M 467 268 L 467 310" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        <path d="M 600 268 L 600 310" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        
+                        <path d="M 70 310 L 600 310" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+                        <path d="M 340 310 L 340 345" stroke="currentColor" strokeWidth="1.5" className="text-slate-800/80" />
+
+                        {/* Feedback return loop */}
+                        <path d="M 470 380 L 665 380 L 665 62.5 L 640 62.5" stroke="currentColor" strokeWidth="1.2" strokeDasharray="3 3" className="text-yellow-500/40" />
+                      </svg>
+
+                      {/* TOP TIER: HUMAN & ORCHESTRATOR */}
+                      {/* Human Panel */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDiagramNode("human")}
+                        style={{ left: "40px", top: "25px", width: "200px", height: "75px" }}
+                        className={`absolute p-3 text-left rounded-xl border cursor-pointer select-none transition-all duration-155 z-10 ${
+                          selectedDiagramNode === "human"
+                            ? "bg-emerald-500/15 border-emerald-500 text-white ring-2 ring-emerald-500/20 shadow-lg shadow-emerald-500/5"
+                            : "bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="p-1 bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/10">
+                            <Sparkles className="w-3.5 h-3.5" />
+                          </span>
+                          <span className="text-[10px] font-bold font-mono tracking-wide">HUMAN DISCOVERY</span>
+                        </div>
+                        <h6 className="mt-1 text-xs font-bold leading-tight">Human Researcher</h6>
+                        <span className="text-[9px] text-slate-500 font-mono block mt-0.5">Configures parameters & feedback</span>
+                      </button>
+
+                      {/* Orchestrator Panel */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDiagramNode("orchestrator")}
+                        style={{ left: "410px", top: "20px", width: "230px", height: "85px" }}
+                        className={`absolute p-3 text-left rounded-xl border cursor-pointer select-none transition-all duration-155 z-10 ${
+                          selectedDiagramNode === "orchestrator"
+                            ? "bg-teal-brand/15 border-teal-brand text-white ring-2 ring-teal-brand/20 shadow-lg shadow-teal-brand/5"
+                            : "bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="p-1 bg-teal-brand/20 text-teal-brand rounded-lg border border-teal-brand/10">
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin-slow" />
+                            </span>
+                            <span className="text-[10px] font-bold font-mono tracking-wide">ORCHESTRATOR</span>
+                          </div>
+                        </div>
+                        <h6 className="mt-1 text-xs font-bold leading-tight">Gemini LLM Coordinator</h6>
+                        <span className="text-[9px] text-slate-500 font-mono block mt-0.5">Delegates jobs & binds history</span>
+                      </button>
+
+                      {/* MIDDLE TIER: 5 PARALLEL SUBAGENTS */}
+                      {/* Agent 1 Surface */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDiagramNode("surface")}
+                        style={{ left: "15px", top: "180px", width: "110px", height: "88px" }}
+                        className={`absolute p-2.5 text-left rounded-lg border cursor-pointer select-none transition-all duration-155 flex flex-col justify-between z-10 ${
+                          selectedDiagramNode === "surface"
+                            ? "bg-blue-500/15 border-blue-500 text-white shadow-md shadow-blue-500/5"
+                            : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                        }`}
+                      >
+                        <Activity className="w-4 h-4 text-blue-400" />
+                        <div>
+                          <span className="text-[8px] font-mono text-slate-500 uppercase block font-bold">Agent 1</span>
+                          <span className="text-[10px] font-bold leading-tight block">Surface Dynamics</span>
+                        </div>
+                      </button>
+
+                      {/* Agent 2 Folding */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDiagramNode("folding")}
+                        style={{ left: "147px", top: "180px", width: "110px", height: "88px" }}
+                        className={`absolute p-2.5 text-left rounded-lg border cursor-pointer select-none transition-all duration-155 flex flex-col justify-between z-10 ${
+                          selectedDiagramNode === "folding"
+                            ? "bg-purple-500/15 border-purple-500 text-white shadow-md shadow-purple-500/5"
+                            : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                        }`}
+                      >
+                        <Atom className="w-4 h-4 text-purple-400" />
+                        <div>
+                          <span className="text-[8px] font-mono text-slate-500 uppercase block font-bold">Agent 2</span>
+                          <span className="text-[10px] font-bold leading-tight block">Biophysics Folds</span>
+                        </div>
+                      </button>
+
+                      {/* Agent 3 Epitope */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDiagramNode("epitope")}
+                        style={{ left: "280px", top: "180px", width: "110px", height: "88px" }}
+                        className={`absolute p-2.5 text-left rounded-lg border cursor-pointer select-none transition-all duration-155 flex flex-col justify-between z-10 ${
+                          selectedDiagramNode === "epitope"
+                            ? "bg-yellow-500/15 border-yellow-500 text-white shadow-md shadow-yellow-500/5"
+                            : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                        }`}
+                      >
+                        <Search className="w-4 h-4 text-yellow-500" />
+                        <div>
+                          <span className="text-[8px] font-mono text-slate-500 uppercase block font-bold">Agent 3</span>
+                          <span className="text-[10px] font-bold leading-tight block font-sans">HLA Docking</span>
+                        </div>
+                      </button>
+
+                      {/* Agent 4 Synthesizer */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDiagramNode("synthesizer")}
+                        style={{ left: "412px", top: "180px", width: "110px", height: "88px" }}
+                        className={`absolute p-2.5 text-left rounded-lg border cursor-pointer select-none transition-all duration-155 flex flex-col justify-between z-10 ${
+                          selectedDiagramNode === "synthesizer"
+                            ? "bg-green-500/15 border-green-500 text-white shadow-md shadow-green-500/5"
+                            : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                        }`}
+                      >
+                        <Beaker className="w-4 h-4 text-green-400" />
+                        <div>
+                          <span className="text-[8px] font-mono text-slate-500 uppercase block font-bold">Agent 4</span>
+                          <span className="text-[10px] font-bold leading-tight block">mRNA Codon Synth</span>
+                        </div>
+                      </button>
+
+                      {/* Agent 5 Safety */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDiagramNode("safety")}
+                        style={{ left: "545px", top: "180px", width: "110px", height: "88px" }}
+                        className={`absolute p-2.5 text-left rounded-lg border cursor-pointer select-none transition-all duration-155 flex flex-col justify-between z-10 ${
+                          selectedDiagramNode === "safety"
+                            ? "bg-red-500/15 border-red-500 text-white shadow-md shadow-red-500/5"
+                            : "bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                        }`}
+                      >
+                        <Shield className="w-4 h-4 text-red-400" />
+                        <div>
+                          <span className="text-[8px] font-mono text-slate-500 uppercase block font-bold">Agent 5</span>
+                          <span className="text-[10px] font-bold leading-tight block">Safety Auditor</span>
+                        </div>
+                      </button>
+
+                      {/* BOTTOM TIER: DOSSIER */}
+                      {/* Dossier Panel */}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDiagramNode("dossier")}
+                        style={{ left: "210px", top: "345px", width: "260px", height: "70px" }}
+                        className={`absolute p-2.5 text-left rounded-xl border cursor-pointer select-none transition-all duration-155 z-10 ${
+                          selectedDiagramNode === "dossier"
+                            ? "bg-blue-400/15 border-blue-400 text-white ring-2 ring-blue-400/20 shadow-lg shadow-blue-400/5 shadow-inner"
+                            : "bg-slate-900/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-1.5 justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="p-1 bg-blue-400/20 text-blue-400 rounded-lg border border-blue-400/10">
+                              <FileText className="w-3.5 h-3.5" />
+                            </span>
+                            <span className="text-[11px] font-bold font-mono tracking-wide mt-0.5">VACCINE DOSSIER</span>
+                          </div>
+                        </div>
+                        <h6 className="mt-1 text-xs font-bold leading-tight">Unified Vaccine Target Prospectus</h6>
+                      </button>
+
+                    </div>
+                  </div>
+
+                  {/* Feedback line label for diagram */}
+                  <div className="text-[9px] font-mono text-slate-500 uppercase absolute right-3 bottom-2 flex items-center gap-1.5 select-none z-10">
+                    <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse" />
+                    <span>Real-time loopback</span>
+                  </div>
+
+                </div>
+
+                {/* DETAILS INSPECTOR (lg:col-span-5) */}
+                <div className="lg:col-span-5 bg-slate-950 rounded-xl border border-slate-850 p-5 space-y-4 flex flex-col justify-between min-h-[460px]">
+                  
+                  {/* Selected Node Details */}
+                  {(() => {
+                    const nodeKey = selectedDiagramNode;
+                    const nodeMeta = DIAGRAM_NODES[nodeKey];
+                    if (!nodeMeta) return null;
+                    const NodeIcon = nodeMeta.icon;
+
+                    return (
+                      <div className="space-y-4 flex-1 flex flex-col justify-between">
+                        <div className="space-y-4">
+                          {/* Header Details */}
+                          <div className="flex items-start gap-3 border-b border-slate-800 pb-3">
+                            <span className="p-2 bg-slate-900 rounded-xl border border-slate-800 flex items-center justify-center shrink-0">
+                              <NodeIcon className="w-5 h-5 text-teal-brand" />
+                            </span>
+                            <div className="space-y-0.5">
+                              <h5 className="text-[13px] font-bold text-slate-100 font-sans tracking-wide leading-tight uppercase">
+                                {nodeMeta.title}
+                              </h5>
+                              <span className="text-[10px] font-mono font-medium tracking-wide uppercase text-teal-brand">
+                                Active Node Protocol Setting
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Core Role Segment */}
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wider block">Core Domain Responsibility</span>
+                            <p className="text-xs text-slate-350 leading-relaxed font-sans font-medium">
+                              {nodeMeta.role}
+                            </p>
+                          </div>
+
+                          {/* inputs & outputs array */}
+                          <div className="grid grid-cols-2 gap-3 pb-1">
+                            <div className="space-y-1.5 p-2.5 bg-slate-900/40 rounded-lg border border-slate-850">
+                              <span className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider block">Input Vectors</span>
+                              <div className="space-y-1 font-mono text-[9px] leading-tight text-slate-400">
+                                {nodeMeta.inputs.map((inp, i) => (
+                                  <span key={i} className="block truncate">&bull; {inp}</span>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="space-y-1.5 p-2.5 bg-slate-900/40 rounded-lg border border-slate-850">
+                              <span className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider block">Output Results</span>
+                              <div className="space-y-1 font-mono text-[9px] leading-tight text-slate-400">
+                                {nodeMeta.outputs.map((out, i) => (
+                                  <span key={i} className="block truncate">&bull; {out}</span>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Long description explanation */}
+                          <div className="space-y-1 border-t border-slate-850 pt-3">
+                            <span className="text-[10px] font-mono text-slate-500 font-bold uppercase tracking-wider block">Scientific Execution Methodology</span>
+                            <p className="text-[11px] text-slate-450 leading-relaxed font-sans font-normal">
+                              {nodeMeta.details}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                </div>
+
+              </div>
+            </div>
+          )}
+
+            {/* Dynamic Content Tab Screens */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start text-xs text-slate-300">
+              
+              {/* Tab 1 content: End-to-End User Flow */}
+              {activeFooterTab === "overview" && (
+                <>
+                  <div className="lg:col-span-6 space-y-4">
+                    <h5 className="font-bold text-slate-100 flex items-center gap-1.5 text-[12.5px] uppercase tracking-wide">
+                      <span className="w-1.5 h-1.5 bg-teal-brand rounded-full " />
+                      User Pipeline Mechanics
+                    </h5>
+                    <div className="space-y-3.5 leading-relaxed font-sans text-slate-400">
+                      <p>
+                        The <strong className="text-slate-200">Billie Gene</strong> application guides vaccine biophysicists through an iterative, six-phase molecular discovery pipeline. Each step establishes the core parameter limits required for structural efficacy and host compatibility.
+                      </p>
+                      <div className="grid grid-cols-1 gap-2.5">
+                        <div className="p-3 bg-slate-950/40 rounded-lg border border-slate-800/80">
+                          <span className="font-mono font-bold text-teal-brand uppercase block text-[10px]">01 // Pathogen Ingestion</span>
+                          <p className="mt-1">Researchers ingest Genomic FASTA fragments or complete protein chains. The platform parses chemical residues, checks chain lengths, and computes basic molecular weight and isoelectric coordinates.</p>
+                        </div>
+                        <div className="p-3 bg-slate-950/40 rounded-lg border border-slate-800/80">
+                          <span className="font-mono font-bold text-yellow-500 uppercase block text-[10px]">02 // High-Throughput Slicing Swarm</span>
+                          <p className="mt-1">A ten-subagent scoring swarm splits the sequence into overlapping peptide window slices, testing each for solvent accessibility, mimicry, alpha-helix folding, and antibody accessibility.</p>
+                        </div>
+                        <div className="p-3 bg-slate-950/40 rounded-lg border border-slate-800/80">
+                          <span className="font-mono font-bold text-purple-500 uppercase block text-[10px]">03 // Active Biophysics Fitting</span>
+                          <p className="mt-1">Aligns coordinate selections inside an interactive interactive 3D WebGL protein viewer. Evaluates Mean Confidence metrics, atomic counts, prefusion states, and glycosylation shields.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-6 space-y-4">
+                    <h5 className="font-bold text-slate-100 flex items-center gap-1.5 text-[12.5px] uppercase tracking-wide opacity-0 lg:opacity-100 select-none">
+                      Workflow Continued
+                    </h5>
+                    <div className="space-y-3.5 leading-relaxed text-slate-400 font-sans">
+                      <div className="grid grid-cols-1 gap-2.5">
+                        <div className="p-3 bg-slate-950/40 rounded-lg border border-slate-800/80">
+                          <span className="font-mono font-bold text-teal-400 uppercase block text-[10px]">04 // Epitope Selection & Grid Filter</span>
+                          <p className="mt-1">Predicts MHC Class-I, Class-II, and B-cell targets. Scientists sort epitopes by pop coverage and filter candidates using a high-density 10-column interactive plate grid.</p>
+                        </div>
+                        <div className="p-3 bg-slate-950/40 rounded-lg border border-slate-800/80">
+                          <span className="font-mono font-bold text-green-500 uppercase block text-[10px]">05 // Spacer Insertion & mRNA Coding</span>
+                          <p className="mt-1">Optimizes mRNA constructs by testing rigid (AAY/pro-cleave tags) versus flexible (GGGGS glycine chains) spacer sequences, avoiding autoimmune cross-reactivity mimicry.</p>
+                        </div>
+                        <div className="p-3 bg-slate-950/40 rounded-lg border border-slate-800/80">
+                          <span className="font-mono font-bold text-red-400 uppercase block text-[10px]">06 // Dossier Assembly & Risk Checks</span>
+                          <p className="mt-1">Performs ClinVar mutations audits, searches PharmGKB for CPIC dosing protocols, and compiles results into an absolute markdown vaccine target prospectus document.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Tab 2 content: Subagent Team Capabilities */}
+              {activeFooterTab === "architecture" && (
+                <>
+                  <div className="lg:col-span-6 space-y-4">
+                    <h5 className="font-bold text-slate-100 flex items-center gap-1.5 text-[12.5px] uppercase tracking-wide">
+                      <span className="w-1.5 h-1.5 bg-teal-brand rounded-full" />
+                      Generative Subagent Registry
+                    </h5>
+                    <div className="space-y-4 text-slate-400">
+                      <p>
+                        Our workflow employs independent, specialized LLM subagent roles. When invoked, they integrate directly with biological database APIs and modeling frameworks to return verifiable structured analysis.
+                      </p>
+                      
+                      <div className="space-y-3 font-mono">
+                        <div className="flex gap-3.5 items-start">
+                          <span className="px-2 py-0.5 bg-slate-950 text-slate-300 rounded border border-slate-800 text-[10px]">Agent 1</span>
+                          <div>
+                            <strong className="text-slate-200 block text-[11px] font-sans">Surface Finder (Domain Exchanger)</strong>
+                            <span className="block mt-0.5 font-sans leading-relaxed text-slate-400 font-normal">Computes membrane coordinates and segment exposure factors using solvent accessible surface calculations.</span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3.5 items-start">
+                          <span className="px-2 py-0.5 bg-slate-950 text-slate-300 rounded border border-slate-800 text-[10px]">Agent 2</span>
+                          <div>
+                            <strong className="text-slate-200 block text-[11px] font-sans">Biophysics Annotator (Folds Evaluator)</strong>
+                            <span className="block mt-0.5 font-sans leading-relaxed text-slate-400 font-normal">Audits mutational conservation, shielding barriers, hydrophobic lipid residues, and electrostatic pocket charges.</span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3.5 items-start">
+                          <span className="px-2 py-0.5 bg-slate-950 text-slate-300 rounded border border-slate-800 text-[10px]">Agent 3</span>
+                          <div>
+                            <strong className="text-slate-200 block text-[11px] font-sans">Epitope Predictor (Binding Dock)</strong>
+                            <span className="block mt-0.5 font-sans leading-relaxed text-slate-400 font-normal font-sans leading-relaxed">Runs MHC presentation math against global HLA haplotype frequencies to maximize population immunogenicity coverage.</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-6 space-y-4">
+                    <h5 className="font-bold text-slate-100 flex items-center gap-1.5 text-[12.5px] uppercase tracking-wide">
+                      <span className="w-1.5 h-1.5 bg-teal-brand rounded-full" />
+                      Vector Synthesis & Toxicity Guards
+                    </h5>
+                    <div className="space-y-4 text-slate-400">
+                      <p>
+                        Subagents continue parsing structures to enforce genetic construct safety margins, translating sequence files cleanly between AI models and deterministic pipelines.
+                      </p>
+
+                      <div className="space-y-3 font-mono">
+                        <div className="flex gap-3.5 items-start">
+                          <span className="px-2 py-0.5 bg-slate-950 text-slate-300 rounded border border-slate-800 text-[10px]">Agent 4</span>
+                          <div>
+                            <strong className="text-slate-200 block text-[11px] font-sans">mRNA Vector Synthesizer (Structural Assembler)</strong>
+                            <span className="block mt-0.5 font-sans leading-relaxed text-slate-400 font-normal">Designs 5&apos; Cap coordinates, Kozak sequences, GC-biased nucleoside transcripts, flanking untranslated regions, and Poly(A) complexes.</span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3.5 items-start">
+                          <span className="px-2 py-0.5 bg-slate-950 text-slate-300 rounded border border-slate-800 text-[10px]">Agent 5</span>
+                          <div>
+                            <strong className="text-slate-200 block text-[11px] font-sans">Pharmacogenomics Auditor (Safety Screener)</strong>
+                            <span className="block mt-0.5 font-sans leading-relaxed text-slate-400 font-normal font-sans leading-relaxed">Accesses CPIC and PharmGKB structures to compute genomic homology limits, ruling out autoimmune mimicry hazards.</span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-3.5 items-start">
+                          <span className="px-2 py-0.5 bg-slate-950 text-slate-300 rounded border border-slate-800 text-[10px]">Orchestrator</span>
+                          <div>
+                            <strong className="text-slate-200 block text-[11px] font-sans">Workflow Context Coordinator (LLM Main Node)</strong>
+                            <span className="block mt-0.5 font-sans leading-relaxed text-slate-400 font-normal font-sans leading-relaxed">Handles chronological step histories, parses direct biophysicist feedback input, and dynamically formats reports.</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Tab 3 content: Multi-Agent Collaboration Architecture */}
+              {activeFooterTab === "collaboration" && (
+                <>
+                  <div className="lg:col-span-6 space-y-4">
+                    <h5 className="font-bold text-slate-100 flex items-center gap-1.5 text-[12.5px] uppercase tracking-wide">
+                      <span className="w-1.5 h-1.5 bg-teal-brand rounded-full" />
+                      The Synergy of LLM Reasoning & Hard Bio-Math
+                    </h5>
+                    <div className="space-y-3.5 leading-relaxed text-slate-400">
+                      <p>
+                        To prevent <strong className="text-slate-200">AI Hallucinations</strong> in clinical vaccine targeting, Billie Gene utilizes a strict dual-layer evaluation structure:
+                      </p>
+                      <div className="space-y-2.5 font-sans">
+                        <div className="p-3 bg-slate-950/60 rounded-lg border border-slate-800/85">
+                          <strong className="text-slate-150 block mb-0.5">1. Determinstic Bio-Computation Layer</strong>
+                          Physical coordinates, residue lengths, atoms lists, CPIC guidelines, and mathematical binding scores are parsed strictly in client-side TypeScript routines utilizing absolute genetic logic.
+                        </div>
+                        <div className="p-3 bg-slate-950/60 rounded-lg border border-slate-800/85">
+                          <strong className="text-slate-150 block mb-0.5">2. Generative LLM Reasoning Layer</strong>
+                          Powered by Google Gemini SDK nodes, specialized LLMs review hard statistics, perform qualitative biophysical threat assessments, and compile structured reports.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-6 space-y-4">
+                    <h5 className="font-bold text-slate-100 flex items-center gap-1.5 text-[12.5px] uppercase tracking-wide">
+                      <span className="w-1.5 h-1.5 bg-teal-brand rounded-full" />
+                      Human-in-the-Loop Refinement Loop
+                    </h5>
+                    <div className="space-y-3.5 leading-relaxed text-slate-400">
+                      <p>
+                        Vaccine biophysics requires high-precision adjustments. When the researcher provides a directive via the <strong className="text-slate-200">Human-In-The-Loop Guidance panel</strong> (e.g., targetting specific demographic distributions or swapping peptide linkers):
+                      </p>
+                      <ul className="list-disc pl-4 space-y-1.5 font-sans">
+                        <li>The context coordinator captures the feedback string alongside active step results.</li>
+                        <li>The sequence properties, target coordinates, and feedback are formatted into unified multi-agent context templates.</li>
+                        <li>The system triggers custom re-predictions, updating scoring weights and producing refined, fully compliant structural output dynamically.</li>
+                        <li>Results are automatically written back to the active dossier, keeping the final prospectus grounded and scientifically clean.</li>
+                      </ul>
+                    </div>
+                  </div>
+                </>
+              )}
+
+            </div>
+
+            {/* Back action */}
+            <div className="pt-6 border-t border-slate-800 flex justify-center">
+              <button
+                type="button"
+                id="btn_guide_exit"
+                onClick={() => setShowUserGuide(false)}
+                className="py-2.5 px-6 bg-teal-brand text-white text-xs uppercase font-bold tracking-wider rounded-xl hover:bg-teal-brand/90 transition-all flex items-center gap-1.5 cursor-pointer shadow-md"
+              >
+                <ArrowRight className="w-4 h-4 rotate-180" />
+                <span>Return to Workspace Discovery Pipeline</span>
+              </button>
+            </div>
+
+            {/* Footer bottom small print */}
+            <div className="pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 font-mono gap-4">
+              <span>Billie Gene Science Framework &copy; {new Date().getFullYear()}</span>
+              <span>Real-time Multi-Agent Collaborative Targeter Suite</span>
+            </div>
+
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Navigation horizontal stepper */}
+          <nav className="bg-panel-light border-b border-line px-8 overflow-x-auto select-none max-w-full shrink-0">
         <div className="flex items-stretch min-w-[780px]">
           {STEP_LABELS.map((step, idx) => {
             const isActive = idx === activeStep;
@@ -2747,6 +3480,22 @@ Escape Risk: ${ep.escapeRisk} (${rPercent}%)`;
 
       </main>
 
-    </div>
+      {/* Elegant Workspace Footer */}
+      <footer className="w-full bg-slate-50 border-t border-line py-4 px-8 flex flex-col sm:flex-row justify-between items-center text-xs text-muted-ink gap-3 select-none">
+        <span className="font-mono text-[10px]">Billie Gene Science Framework &copy; {new Date().getFullYear()}</span>
+        <button
+          type="button"
+          id="footer_guide_link"
+          onClick={() => setShowUserGuide(true)}
+          className="text-teal-brand font-bold hover:underline cursor-pointer flex items-center gap-1 font-sans text-[11px]"
+        >
+          <BookOpen className="w-3.5 h-3.5" />
+          <span>Open System User Guide & Architecture Flow</span>
+        </button>
+      </footer>
+    </>
+  )}
+</div>
   );
 }
+
