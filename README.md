@@ -1,18 +1,21 @@
 # Billie Gene
 
-Billie Gene is a research-use prototype for exploring protein structure modeling in a guided vaccine-design workflow. The current app focuses on the protein model screen: it accepts a protein amino acid sequence, sends it to ESM Atlas for ESMFold structure prediction, and renders the resulting PDB structure in the browser.
+Billie Gene is a research-use prototype for exploring protein structure modeling in a guided vaccine-design workflow. The frontend is organized as a horizontal step-by-step workspace that moves from sequence intake through surface protein screening, structure modeling, epitope scoring, concept mRNA construct layout, and a final candidate dossier.
 
 The prototype is intended for computational exploration and education only. It does not generate clinically validated vaccine products, therapeutic recommendations, or wet-lab-ready protocols.
 
 ## Features
 
+- Six-step horizontal workflow for sequence intake, surface protein ranking, structure modeling, epitope scoring, mRNA construct preview, and candidate dossier review.
+- DNA, RNA, protein, and FASTA paste support with local `.txt`, `.fa`, `.fasta`, `.fna`, `.ffn`, `.faa`, `.gb`, and `.gbk` file upload.
+- Automatic DNA/RNA reading-frame scan that proposes the longest translated protein candidate for folding.
 - Protein sequence input with the ESM Atlas 400 amino acid limit surfaced in the UI.
+- Labeled surface protein track viewer with candidate ranking tables.
 - Live ESM Atlas folding through the public `foldSequence` API.
 - Local demo model from `esmfold-demo.pdb`.
 - Browser-based 3D structure viewer using 3Dmol.js.
 - PDB-derived 2D fallback rendering when WebGL is unavailable.
-- Model summary metrics for residues, atoms, and mean local confidence.
-- Surface protein and candidate epitope track mockup for downstream screening.
+- Epitope heatmap, ranked epitope list, construct diagram, and dossier export queue mockups.
 
 ## Project Structure
 
