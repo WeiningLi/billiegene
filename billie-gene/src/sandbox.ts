@@ -285,20 +285,38 @@ Formulated a safe Vaccine mRNA construct string sequence mapping layout:
 -   **3' UTR:** Optimized β-globin elements.
 -   **Poly(A) component:** 120-nucleotide polyadenylation tail.
 
+**Vector Layout Map:**
+\`\`\`
+[5' Cap] ── [5' UTR] ── [Signal Peptide] ── [BG-EPI-001] ── (AAY) ── [BG-EPI-003] ── (GGGGS) ── [BG-EPI-006] ── [3' UTR] ── [Poly-A Tail]
+\`\`\`
+*Rigid (AAY) and flexible (GGGGS) linkers optimize cellular presentation pathways and prevent expression collisions.*
+
 ### Manufacturability Score Metrics
 *   **Codon Adaptation Index (CAI):** **0.89** (Exceptional human cellular expression compatibility)
 *   **GC-balance index:** **53%** (Favorable secondary fold prevention profile)
-*   **Translation Integrity:** **PASS** (Zero premature stop codon hazards)`
+*   **Translation Integrity:** **PASS** (Zero premature stop codon hazards)
+
+### Associated Pharmacogenomic (PGx) Risk Metrics
+*   **Background HLA Risk-Genotype Co-Allocation:** **0.14%**
+*   **Associated Benign/VUS Somatic Variants Screened:** **2 Identified** (Zero structural interference or pathological intersections detected via pgx_screener (Pharmacogenomic Risk Screen) and homology (Host Mimicry Filter) subagents)`
     },
     {
       id: "pgx_screener",
       name: "Pharmacogenomic Risk Screener",
       skillsApplied: ["Population Allele Coverage Map", "Auto-inflammation Hazards Identification", "Self-Similarity Filters"],
-      output: `### Population-Scale Pharmacogenomic Risk Screen
-*   **Estimated HLA Population Coverage:** **81.4%** across major regional registries.
-*   **Autoimmune Cross-Reactivity:** Passed full blast index scan against the human proteome database. 0% matching residues > 6aa found, indicating exceptionally low autoimmune reaction risks.
-*   **Hyper-responders warnings:** No elevated CD4+ hyper-activation risk patterns observed.
-*   **Low HLA coverage groups:** Minor gaps in presentation predicted for HLA-B*27 alleles. Corrected by including the stable sequence Epitope BG-EPI-006.`
+      output: `### Population-Scale Pharmacogenomic (PGx) Risk Screen
+
+*   **1000 Genomes Project Population Frequencies:**
+    - *East Asian:* **94.2%** HLA binding capacity | *European / Caucasian:* **92.5%** | *African:* **86.8%** | *Admixed American:* **89.6%**
+    - Optimized composite global average allele frequency representation mapped at **91.1%** based on continental sub-population cohorts.
+*   **ClinVar Variant Clinical Significance & Safety Index:**
+    - Scanned all targeted epitope regions against ClinVar pathological and pathogenic somatic/germline databases.
+    - Result: **0.14% background variant association rate detected** (2 benign/VUS clinical variant loci identified with zero structural interference). Zero links to autoimmune hyper-responsiveness, or known post-vaccine immunological hypersensitivities.
+*   **PharmGKB & CPIC (Clinical Pharmacogenetics Implementation Consortium) Guidance:**
+    - Screened genetic variant interaction mappings using PharmGKB API to inspect genomic pathways involved in HLA presentation and immune response.
+    - Verified against CPIC guidelines for genotypic immunotherapeutic exposures: no CYP-mediated metabolic abnormalities or atypical HLA-risk genotypes (e.g., HLA-B*57:01, HLA-B*15:02) mapped as cross-reactive to selected epitopic strands.
+*   **Autoimmune Molecular Mimicry Check:**
+    - Passed complete sequence alignment scan against host human target proteins. No matching peptide windows > 6 residues found, ensuring minimal cross-reactivity risks.`
     }
   ];
 
@@ -359,10 +377,15 @@ The most promising vaccine target identified is the surface envelope glycoprotei
 ---
 
 ### 5. Conceptual mRNA Construct Specifications
--   **Layout Topology:** \`5' Cap - 5' UTR - Signal Peptide - EPI-001 - Linker - EPI-003 - Linker - EPI-006 - 3' UTR - Poly(A)\`
 -   **Sequence Length:** 1,248 nt conceptual construct.
 -   **Codon Optimization Ratio:** CAI index is **0.89**, indicating efficient translation.
 -   **GC balance percentage:** **53%**, preventing problematic RNA hairpins or secondary structure folding issues.
+
+**Vector Layout Map:**
+\`\`\`
+[5' Cap] ── [5' UTR] ── [Signal Peptide] ── [BG-EPI-001] ── (AAY) ── [BG-EPI-003] ── (GGGGS) ── [BG-EPI-006] ── [3' UTR] ── [Poly-A Tail]
+\`\`\`
+*Peptide linkers spacer strings (AAY/GGGGS) prevent steric folding blocks and optimize proteasomal processing.*
 
 ---
 

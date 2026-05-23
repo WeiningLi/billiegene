@@ -21,9 +21,9 @@ export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
   const flushCodeBlock = (index: number) => {
     if (codeBlockLines.length > 0) {
       elements.push(
-        <div key={`code-${index}`} className="my-4 rounded-xl border border-slate-200 bg-slate-900 p-4 font-mono text-xs text-slate-250 leading-relaxed overflow-x-auto">
+        <div key={`code-${index}`} className="my-4 rounded-xl border border-slate-200 bg-slate-50 p-4 font-mono text-xs text-slate-800 leading-relaxed overflow-x-auto">
           {codeBlockLang && (
-            <div className="mb-2 text-[10px] text-slate-400 uppercase tracking-widest border-b border-slate-800 pb-1">
+            <div className="mb-2 text-[10px] text-slate-500 uppercase tracking-widest border-b border-slate-200 pb-1">
               {codeBlockLang}
             </div>
           )}

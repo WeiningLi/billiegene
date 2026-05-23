@@ -123,6 +123,8 @@ export default function Molecular3DVisualizer({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const lastPdbDataRef = useRef<string>("");
+  const selectedResiduesJoined = selectedResidues.join(",");
 
   // Script loading state
   const [scriptsLoaded, setScriptsLoaded] = useState(false);
@@ -378,11 +380,14 @@ export default function Molecular3DVisualizer({
   useEffect(() => {
     if (!viewer) return;
 
-    viewer.clear();
-
     const currentPdbData = pdbData || (mode === "dna"
       ? generateSyntheticDNAPDB(48)
       : esmPdb || generateSyntheticPDB(metrics.residues, selectedResidues));
+
+    const structureChanged = lastPdbDataRef.current !== currentPdbData;
+    if (structureChanged) {
+      viewer.clear();
+    }
 
     // Dynamic scale spectrum adaptation for B-factor (pLDDT column) values
     let maxB = -1000;
@@ -434,7 +439,10 @@ export default function Molecular3DVisualizer({
     };
 
     try {
-      viewer.addModel(currentPdbData, "pdb");
+      viewer.removeAllSurfaces();
+      if (structureChanged) {
+        viewer.addModel(currentPdbData, "pdb");
+      }
 
       if (mode === "dna") {
         // DNA double strand styled representation
@@ -522,12 +530,15 @@ export default function Molecular3DVisualizer({
         }
       }
 
-      viewer.zoomTo();
+      if (structureChanged) {
+        viewer.zoomTo();
+        lastPdbDataRef.current = currentPdbData;
+      }
       viewer.render();
     } catch (err: any) {
       console.warn("Failed rendering styled model inside 3Dmol viewer:", err.message);
     }
-  }, [viewer, mode, esmPdb, selectedResidues, activeSegment, metrics.residues, pdbData, activeStyle]);
+  }, [viewer, mode, esmPdb, selectedResiduesJoined, activeSegment, metrics.residues, pdbData, activeStyle]);
 
   // Handle Play/Pause spin action
   const handleToggleRotation = () => {
@@ -556,12 +567,15 @@ export default function Molecular3DVisualizer({
   };
 
   // Zoom manipulation
-  const handleScaleZoom = (multiplier: number) => {
+  // Zoom manipulation
+  const handleScaleZoom = (direction: "in" | "out") => {
     if (viewer) {
-      const zoomFactor = multiplier > 1 ? 0.85 : 1.15; // 3Dmol zoom factor runs inverted
-      viewer.zoom(zoomFactor, 100);
+      // In 3Dmol, a factor < 1 zooms in (makes model larger), factor > 1 zooms out
+      const factor = direction === "in" ? 0.85 : 1.15;
+      viewer.zoom(factor, 100);
       viewer.render();
     } else {
+      const multiplier = direction === "in" ? 1.15 : 0.85;
       setLocalZoom(prev => Math.max(0.4, Math.min(2.5, prev * multiplier)));
     }
   };
@@ -875,14 +889,14 @@ export default function Molecular3DVisualizer({
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={() => handleScaleZoom(1.15)}
+            onClick={() => handleScaleZoom("in")}
             className="p-1 rounded-md text-slate-550 hover:text-slate-900 hover:bg-slate-200/80 transition-all cursor-pointer"
             title="Increase Scale"
           >
             <ZoomIn className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={() => handleScaleZoom(0.85)}
+            onClick={() => handleScaleZoom("out")}
             className="p-1 rounded-md text-slate-550 hover:text-slate-900 hover:bg-slate-200/80 transition-all cursor-pointer"
             title="Decrease Scale"
           >
